@@ -2,12 +2,6 @@ import random
 #import Environment
 import numpy as np
 
-ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'hive': 2, 'blockade': 3, 
-                                'food_start': 4},
-                'N': 20, 'M': 20, 'max_food': 6, 'observation_radius': 4, 'steps': 5000, 'spawn_rate': 2,
-                'pheromone': {'evaporation': 0.1, 'diffusion': 0.1, 'step': 0.2},
-                'grid': {'food': 40, 'blockade': 20}}
-
 class GeneticAlgorithm:
     def get_food(self, cell_value):
         # helper method transforming cell value to amount of food
