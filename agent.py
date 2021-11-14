@@ -13,7 +13,7 @@ class Agent():
         return self.location, self.food
     
     @abc.abstractmethod
-    def get_action(self):
+    def get_action(self, observation, valid_movements):
         # Returns movement, pheromone
         pass 
 
@@ -21,5 +21,5 @@ class Agent():
         return ''+ str(self.location) + ' ' + str(self.active) + ' ' + str(self.food)
 
 class RandomAgent(Agent):
-    def get_action(self):
-        return random.choice(self.valid_movements), random.uniform(0,1.)
+    def get_action(self, observation, valid_movements):
+        return random.choice(valid_movements), random.random()
