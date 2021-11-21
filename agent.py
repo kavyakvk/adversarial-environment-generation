@@ -1,4 +1,5 @@
 import abc
+import random
 
 class Agent():
     def __init__(self, id):
@@ -6,7 +7,7 @@ class Agent():
         self.prev_location = (0,0)
         self.food = 0
         self.active = 0
-        self.id = None
+        self.id = id
         self.bfs_active = 0
     
     def get_state(self):
