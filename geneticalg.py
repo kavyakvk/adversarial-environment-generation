@@ -1,5 +1,5 @@
 import random
-#import Environment
+from environment import *
 import numpy as np
 from tqdm import tqdm
 
@@ -44,7 +44,7 @@ class GeneticAlgorithm:
         return grid
 
     def get_fitness(self, grid, agents):
-        #env = Environment(self.env_params, grid)
+        #env = environment.Environment(self.env_params, grid)
         #return env.run_episode(agents)
         return random.random()
     
