@@ -1,3 +1,5 @@
+import numpy as np
+
 def process_grids(observation, env_params):
     agent_grid, static_grid, dynamic_grid = observation
     agent_static_grid_processed, dynamic_grid_processed = np.array((N, M, 3)), np.array((N, M, 3))

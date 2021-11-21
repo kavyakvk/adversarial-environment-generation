@@ -1,4 +1,5 @@
 from agent import Agent
+from utils import *
 import torch
 
 class DQNAgent(Agent):
@@ -9,7 +10,8 @@ class DQNAgent(Agent):
         super(self)
     
     def get_action(self, observation, valid_movements):
-        agent_grid, static_grid, dynamic_grid = observation
+        agent_static_grid, dynamic_grid = utils.process_grids()
+
         
             
         
