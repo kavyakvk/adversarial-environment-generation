@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import copy
+from utils import *
 
 ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
                             'N': 20, 'M': 20, 'max_food': 5, 'observation_radius': 5, 'steps': 5000, 'spawn_rate': 2, 
@@ -26,6 +27,10 @@ class Environment:
             self.static_grid[0][0] = env_params['coding_dict']['hive']
             self.static_grid[self.rows-1][self.cols-1] = 9              # Place food in the corner
         
+        '''
+            BFS
+        '''
+        self.spt = [[q[0] for q in r] for r in expert_navigation_policy_set(self.static_grid, (0,0))]
         
         '''
             Params
@@ -75,7 +80,8 @@ class Environment:
                 self.agent_nums[location] -= 1
                 if self.agent_nums[location] == 0:
                     self.agent_grid[location] = 0   # Delete previous location from static
-                agent.prev_location = location
+                if agent.prev_location != location:
+                    agent.prev_location = location
                 self.agent_nums[new_location] += 1
                 self.agent_grid[new_location] = 1   # Add new location to static
                 agent.location = new_location
