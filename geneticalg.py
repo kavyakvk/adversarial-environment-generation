@@ -1,6 +1,7 @@
 import random
 #import Environment
 import numpy as np
+from tqdm import tqdm
 
 class GeneticAlgorithm:
     def get_food(self, cell_value):
@@ -14,6 +15,7 @@ class GeneticAlgorithm:
     
     def get_grid_food(self, food):
         # helper method transforming amount of food to cell value
+        assert(food <= self.env_params['max_food'])
         return self.env_params['coding_dict']['food_start']+food-1
 
     def generate_random_grid(self):
@@ -21,15 +23,16 @@ class GeneticAlgorithm:
         num_blockades = random.randint(1, self.env_params['grid']['blockade'])
 
         grid = np.zeros(self.env_params['N']*self.env_params['M']-num_blockades)
-        grid[0,0] = self.env_params['coding_dict']['hive']
 
         # insert the blockades into the grid
-        np.insert(grid, np.random.choice(len(grid), size=num_blockades), np.ones(num_blockades))
+        grid = np.insert(grid, np.random.choice(len(grid), size=num_blockades), np.ones(num_blockades))
         grid = grid*self.env_params['coding_dict']['blockade']
+
+        grid[0] = self.env_params['coding_dict']['hive']
 
         # place food across the grid
         food_left = self.env_params['grid']['food']
-        potential_food_idxs = np.where(grid == 0)[0]
+        potential_food_idxs = list(np.where(grid == 0)[0])
         random.shuffle(potential_food_idxs)
         while food_left > 0:
             food = random.randint(1, min(food_left, self.env_params['max_food']))
@@ -37,7 +40,7 @@ class GeneticAlgorithm:
             grid[potential_food_idxs[0]] = self.get_grid_food(food)
             del potential_food_idxs[0]
 
-        np.reshape(grid, (self.env_params['N'],self.env_params['M']))
+        grid = np.reshape(grid, (self.env_params['N'],self.env_params['M']))
         return grid
 
     def get_fitness(self, grid, agents):
@@ -45,7 +48,7 @@ class GeneticAlgorithm:
         #return env.run_episode(agents)
         return random.random()
     
-    def get_crossover(self, grid1, grid2, tile_size=3):
+    def get_crossover(self, grid1, grid2, tile_size=2):
         assert(self.env_params['N']%tile_size == 0)
         assert(self.env_params['M']%tile_size == 0)
 
@@ -53,7 +56,9 @@ class GeneticAlgorithm:
         m = self.env_params['M']//tile_size
         mask1 = np.kron(np.random.randint(low=0, high=2, size=(n,m)), np.ones((tile_size,tile_size)))
         mask2 = np.ones((self.env_params['N'], self.env_params['M'])) - mask1
-        return np.multiply(mask1, grid1) + np.multiply(mask2, grid2))
+        crossed = [np.multiply(mask1, grid1) + np.multiply(mask2, grid2)]
+        crossed.append(np.multiply(mask2, grid1) + np.multiply(mask1, grid2))
+        return crossed
 
     def get_mutated(self, grid, rate_mutation):
         total_food = self.env_params['grid']['food']
@@ -78,7 +83,7 @@ class GeneticAlgorithm:
                         if random.random() >= 0.5:
                             # flip empty to food
                             food = random.randint(1, self.env_params['max_food'])
-                            total_food = self.get_baseline_food(grid[x,y], total_food)+food
+                            total_food = total_food+food
                             grid[x,y] = self.get_grid_food(food)
                         else:
                             # flip empty to blockade
@@ -86,49 +91,60 @@ class GeneticAlgorithm:
                             total_blockades += 1
         
         if total_food < self.env_params['grid']['food']:
-            # if the amount of placed food is too low
-            food_idxs = zip(*np.where(grid >= self.env_params['coding_dict']['food_start']))
-            empty_idxs = zip(*np.where(grid == self.env_params['coding_dict']['empty']))
-            food_idxs.extend(empty_idxs)
-            random.shuffle(food_idxs)
             while total_food != self.env_params['grid']['food']:
-                for idx in range(len(food_idxs)):
+                # if the amount of placed food is too low
+                food_idxs = list(zip(*np.where(grid >= self.env_params['coding_dict']['food_start'])))
+                empty_idxs = list(zip(*np.where(grid == self.env_params['coding_dict']['empty'])))
+                food_idxs.extend(empty_idxs)
+                random.shuffle(food_idxs)
+                for idx in food_idxs:
+                    x,y = idx[0], idx[1]
                     if total_food == self.env_params['grid']['food']:
                         break
                     else:
-                        cell_food = self.get_food(grid[x,y])
+                        cell_food = 0
+                        if grid[x,y] != 0:
+                            cell_food = self.get_food(grid[x,y])
                         if cell_food < self.env_params['max_food']:
                             delta_food = self.env_params['grid']['food']-(total_food-cell_food)
-                            food = random.randint(cell_food+1, min(self.env_params['max_food'], delta_food))
-                            total_food = (self.env_params['grid']['food']-delta_food)+food
+                            food = delta_food
+                            if delta_food < 0:
+                                food = random.randint(cell_food+1, self.env_params['max_food'])
+                            total_food = total_food+(food-cell_food)
                             grid[x,y] = self.get_grid_food(food)
         elif total_food > self.env_params['grid']['food']:
             # if the amount of placed food is too high
-            food_idxs = zip(*np.where(grid >= self.env_params['coding_dict']['food_start']))
-            random.shuffle(food_idxs)
             while total_food != self.env_params['grid']['food']:
-                for idx in range(len(food_idxs)):
+                food_idxs = list(zip(*np.where(grid >= self.env_params['coding_dict']['food_start'])))
+                random.shuffle(food_idxs)
+                for idx in food_idxs:
+                    x,y = idx[0], idx[1]
                     if total_food == self.env_params['grid']['food']:
                         break
                     else:
                         cell_food = self.get_food(grid[x,y])
-                        food = random.randint(0, cell_food-1)
-                        total_food = (self.env_params['grid']['food']-delta_food)+food
+                        delta_food = self.env_params['grid']['food']-(total_food-cell_food)
+                        food = delta_food
+                        if delta_food < 0:
+                            food = random.randint(0, cell_food-1)
+                        total_food = total_food+(food-cell_food)
                         if food == 0:
                             grid[x,y] = self.env_params['coding_dict']['empty']
                         else:
                             grid[x,y] = self.get_grid_food(food)
-
+        
         if total_blockades > self.env_params['grid']['blockade']:
-            blockades_idxs = zip(*np.where(grid == self.env_params['coding_dict']['blockade']))
+            blockades_idxs = list(zip(*np.where(grid == self.env_params['coding_dict']['blockade'])))
             random.shuffle(blockades_idxs)
             for idx in range(total_blockades - self.env_params['grid']['blockade']):
-                grid[blockades_idxs[idx[0]], blockades_idxs[idx[1]]] = self.env_params['coding_dict']['empty']
+                x, y = blockades_idxs[idx][0], blockades_idxs[idx][1]
+                grid[x, y] = self.env_params['coding_dict']['empty']
         # elif total_blockades < self.env_params['grid']['blockade']:
         #     empty_idxs = zip(*np.where(grid == self.env_params['coding_dict']['blockade']))
         #     random.shuffle(empty_idxs)
         #     for idx in range(self.env_params['grid']['blockade']-total_blockades):
         #         grid[empty_idxs[idx[0]], empty_idxs[idx[1]]] = self.env_params['coding_dict']['blockade']
+        return grid
 
     def check_feasibility(self, grid):
         return True
@@ -136,10 +152,11 @@ class GeneticAlgorithm:
     def __init__(self, population_size, env_params):
         self.population_size = population_size
         self.env_params = env_params
-        self.population = [self.generate_random_grid(self.env_params) for i in range(self.population_size)]
+        self.population = [self.generate_random_grid() for i in range(self.population_size)]
     
     def run(self, rate_elitism, rate_mutation, iterations, agents):
         for i in range(iterations):
+            print("ITERATION ", i)
             fitness = [self.get_fitness(x, agents) for x in self.population]
 
             # elitism based selection
@@ -156,14 +173,15 @@ class GeneticAlgorithm:
                                                             self.population[crossover_idxs[1]]))
             
             # mutation
-            for j in range(num_crossover):
+            for j in random.sample([x for x in range(len(new_population))], num_crossover):
                 grid = self.get_mutated(new_population[j], rate_mutation)
                 # check feasibility of solution
-                if check_feasibility(grid):
+                if self.check_feasibility(grid):
                     new_population[j] = grid
             
             #update population
-            self.population = selected_population.extend(new_population)
+            selected_population.extend(new_population)
+            self.population = selected_population
         
 
 
