@@ -24,7 +24,6 @@ def process_grids(observation, env_params, visual=True):
                     agent_static_grid_processed[i,j] = env_params['rgb_coding'][static_grid[i,j]]
                 else:
                     set_channel(i, j, agent_static_grid_processed, env_params['rgb_coding'][static_grid[i,j]])
-
             # compute greyscale values for dynamic grid
             greyscale_val = 255 * (env_params['pheromone']['cap'] - dynamic_grid[i,j])/env_params['pheromone']['cap']
             assert(greyscale_val > 0 and greyscale_val <= 255)
