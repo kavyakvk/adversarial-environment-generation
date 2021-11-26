@@ -149,9 +149,11 @@ class Environment:
         '''
         self.spawn_queue = []
 
-    def run_episode(self, agents, grid=None):
+    def run_episode(self, agents, grid=None, visualize=False):
         # Add all agents to spawn queue
-        self.spawn_queue = [i for i in range(len(agents))]       
+        self.spawn_queue = [i for i in range(len(agents))]  
+        
+        env_observations = [(self.agent_grid.copy(), self.static_grid.copy(), self.dynamic_grid.copy())]
 
         # Run through time steps
         for time_step in range(self.total_steps):
@@ -171,6 +173,10 @@ class Environment:
                     
             # Environment.step
             self.step(agents)
+            
+            # Save observation for visualization
+            if visualize:
+                env_observations.append((self.agent_grid.copy(), self.static_grid.copy(), self.dynamic_grid.copy()))
         
         food_collected = self.total_food
         print('grid')
@@ -179,8 +185,12 @@ class Environment:
         self.visualize_map(self.agent_grid)
         # Reset environment
         self.reset(grid)
+        
         # Return amount of collected food
-        return food_collected
+        if visualize:
+            return food_collected, env_observations
+        else:
+            return food_collected
 
     def visualize_map(self, np_array):
         # Print out np_array

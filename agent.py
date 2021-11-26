@@ -31,11 +31,12 @@ class SwarmAgent(Agent):
     def __init__(self, id, env_params, spt):
         self.env_params = env_params
         self.spt = spt
+        self.orientation = None
         self.obs_rad = self.env_params['observation_radius']
         obs_window = self.env_params['observation_radius']*2+1
         super().__init__(id)
         
-    def get_action(self, observation, valid_movements):
+    def get_action(self, observation, valid_movements, fwd_only = 1):
         agent_grid, static_grid, dynamic_grid = observation
         last_action = tuple(np.array(self.location) - np.array(self.prev_location))
         if self.food:
@@ -45,20 +46,22 @@ class SwarmAgent(Agent):
         else:
             # head toward high pheromone
             if last_action == (-1,0):
-                d = dynamic_grid[:self.obs_rad + 1, :]
+                d = dynamic_grid[:self.obs_rad + 1 - fwd_only, :]
 
             elif last_action == (0,1):
-                d = dynamic_grid[:, self.obs_rad:]
+                d = dynamic_grid[:, self.obs_rad + fwd_only:]
 
             elif last_action == (1,0):
-                d = dynamic_grid[self.obs_rad:, :]
+                d = dynamic_grid[self.obs_rad + fwd_only:, :]
 
             elif last_action == (0,-1):
-                d = dynamic_grid[:, :self.obs_rad + 1]
+                d = dynamic_grid[:, :self.obs_rad + 1 - fwd_only]
             else: 
                 d = dynamic_grid
         
-        best_loc = np.unravel_index(d.argmax(), d.shape)
+#         best_loc = np.unravel_index(d.argmax(), d.shape)
+        best_loc = np.argwhere(d == np.max(d))
+        best_loc = best_loc[np.random.randint(len(best_loc))]
                 
         good_actions = []     
         # if best action row > agent row in observation window
@@ -78,8 +81,10 @@ class SwarmAgent(Agent):
         else:
             next_movement = valid_movements[np.random.randint(len(valid_movements))]
             
+#         if self.id == 0:
+#             print(dynamic_grid)
+#             print(self.location)
         return next_movement, self.env_params['pheromone']['step']
-
 
 
 class DQNAgent(Agent):
