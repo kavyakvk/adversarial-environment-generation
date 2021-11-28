@@ -52,12 +52,15 @@ class Environment:
     def get_valid_movements(self, agent):
         location, food = agent.get_state()
         pos_x, pos_y = location
-        possible_movements = [(0,-1), (0,1), (1,0), (-1,0), (0,0)]
-        valid_movements = []
+        possible_movements = [(0,-1), (0,1), (1,0), (-1,0)]
+        valid_movements = [(0,0)]
         for movement in possible_movements:
             new_location = (pos_x + movement[0], pos_y + movement[1])
             if new_location[0] < self.rows and new_location[0] >= 0 and new_location[1] < self.cols and new_location[1] >= 0 and self.static_grid[new_location[0]][new_location[1]] not in [self.env_params['coding_dict']['bounds'], self.env_params['coding_dict']['blockade']]:
                 valid_movements.append(movement)
+        if len(valid_movements) == 0:
+            print(self.static_grid)
+        assert(len(valid_movements) > 0)
         return valid_movements
     
     def step(self, agents):
@@ -179,10 +182,11 @@ class Environment:
                 env_observations.append((self.agent_grid.copy(), self.static_grid.copy(), self.dynamic_grid.copy()))
         
         food_collected = self.total_food
-        print('grid')
-        self.visualize_map(self.static_grid)
-        print('static')
-        self.visualize_map(self.agent_grid)
+        if visualize:
+            print('grid')
+            self.visualize_map(self.static_grid)
+            print('static')
+            self.visualize_map(self.agent_grid)
         # Reset environment
         self.reset(grid)
         

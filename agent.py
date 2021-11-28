@@ -1,9 +1,11 @@
 import abc
 from utils import *
-import torch
+#import torch
 
 class Agent():
-    def __init__(self, id):
+    def __init__(self, id, env_params, spt=None):
+        self.env_params = env_params
+        self.spt = spt
         self.location = (0,0)
         self.prev_location = (0,0)
         self.food = 0
@@ -13,6 +15,9 @@ class Agent():
     
     def get_state(self):
         return self.location, self.food
+
+    def set_spt(self, spt):
+        self.spt = spt
     
     @abc.abstractmethod
     def get_action(self, observation, valid_movements):
@@ -28,13 +33,11 @@ class RandomAgent(Agent):
     
     
 class SwarmAgent(Agent):
-    def __init__(self, id, env_params, spt):
-        self.env_params = env_params
-        self.spt = spt
+    def __init__(self, id, env_params, spt=None):
+        super().__init__(id, env_params, spt)
         self.orientation = None
         self.obs_rad = self.env_params['observation_radius']
         self.obs_window = self.env_params['observation_radius']*2+1
-        super().__init__(id)
         
     def flatten(self, obs_r, obs_c):
         return self.obs_window * r + c
@@ -88,6 +91,7 @@ class SwarmAgent(Agent):
             if best_loc[1] < self.obs_rad:
                 good_actions.append((0,-1))
 
+            assert(len(valid_movements) > 0)
             # if list empty take random action from all actions not blocked by obstacles
             good_actions = list(set(good_actions).intersection(set(valid_movements)))
             if len(good_actions) > 0:
@@ -104,8 +108,8 @@ class DQNAgent(Agent):
         self.input_shape = (obs_window, obs_window)
 
         # construct the model
-        agent_static = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
-        agent_dynamic = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
+        #agent_static = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
+        #agent_dynamic = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=True)
         super(self)
     
     def get_action(self, observation, valid_movements):
