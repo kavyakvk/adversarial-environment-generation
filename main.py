@@ -44,5 +44,5 @@ pickle_dict = {
     'fitness values': fitness_values,
     'env_params': ENV_PARAMS
 }
-with open('Pickled/GA_random_100_iterations') as f:
+with open('Pickled/GA_SwarmAgent_100_iterations') as f:
     pickle.dump(pickle_dict, f)
