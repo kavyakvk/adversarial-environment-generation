@@ -136,10 +136,11 @@ class GeneticAlgorithm:
                 grid = self.population[i]
     
     def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False):
-        tdqm_disable = not verbose
+        # tdqm_disable = not verbose
+        tdqm_disable = True
         grids, fitness_values = [], []
         for i in range(iterations):
-            fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tdqm_disable)]
+            fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tdqm_disable, position=0, leave=True)]
             if verbose:
                 print("ITERATION ", i, sum(fitness)/len(fitness))
             

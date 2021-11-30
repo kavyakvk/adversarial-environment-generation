@@ -3,11 +3,11 @@ import random
 import copy
 import utils
 
-ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
-                            'N': 20, 'M': 20, 'max_food': 5, 'observation_radius': 5, 'steps': 5000, 'spawn_rate': 2, 
-                            'pheromone': {'evaporation': 0.1, 'diffusion': 0.1, 'step': 0.2, 'cap': 5}, 
-                            'grid': {'food': 40, 'blockade': 20}, 
-                            'rgb_coding': {0: [0, 0, 0], 1: [150, 0, 150], 2: [100, 100, 100], 3: [150, 150, 0], 4: [45, 0, 255], 5: [0, 255, 45], 6: (0, 250, 50), 7: (0, 245, 55), 8: (0, 240, 60), 9: (0, 235, 65), 10: (0, 230, 70), 11: (0, 225, 75), 12: (0, 220, 80), 13: (0, 215, 85), 14: (0, 210, 90)}}
+# ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
+#                             'N': 20, 'M': 20, 'max_food': 5, 'observation_radius': 5, 'steps': 5000, 'spawn_rate': 2, 
+#                             'pheromone': {'evaporation': 0.1, 'diffusion': 0.1, 'step': 0.2, 'cap': 5}, 
+#                             'grid': {'food': 40, 'blockade': 20}, 
+#                             'rgb_coding': {0: [0, 0, 0], 1: [150, 0, 150], 2: [100, 100, 100], 3: [150, 150, 0], 4: [45, 0, 255], 5: [0, 255, 45], 6: (0, 250, 50), 7: (0, 245, 55), 8: (0, 240, 60), 9: (0, 235, 65), 10: (0, 230, 70), 11: (0, 225, 75), 12: (0, 220, 80), 13: (0, 215, 85), 14: (0, 210, 90)}}
 
 class Environment:
     def __init__(self, env_params, grid=None):
@@ -90,7 +90,7 @@ class Environment:
                 if np.any(np.isin(np.arange(self.env_params['coding_dict']['food_start'], 
                                             self.env_params['coding_dict']['food_start']+self.env_params['max_food']),
                                     agent_observation[1])):
-                    step_rewards[agent] += 0.25
+                    step_rewards[agent_idx] += 0.25
 
                 location, food = agent.get_state()
                 new_location = (location[0] + movement[0], location[1] + movement[1])
