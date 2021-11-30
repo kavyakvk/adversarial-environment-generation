@@ -63,7 +63,7 @@ class Environment:
         assert(len(valid_movements) > 0)
         return valid_movements
     
-    def step(self, agents):
+    def step(self, agents, actions=None):
         self.time_step += 1
 
         # Pheromone evaporation
@@ -72,9 +72,13 @@ class Environment:
                 self.dynamic_grid[i, j] *= (1 - self.evaporation_rate)
 
         # Update for each active agent
-        for agent in agents:
+        for agent_idx in agents:
+            agent = agents[agent_idx]
             if agent.active == 1:
-                movement, pheromone = agent.get_action(self.get_observation(agent.location), self.get_valid_movements(agent))
+                if ((actions is not None) and (actions[agent_idx] is not None)):
+                    movement, pheromone = actions[agent_idx]
+                else:
+                    movement, pheromone = agent.get_action(self.get_observation(agent.location), self.get_valid_movements(agent))
                 location, food = agent.get_state()
                 new_location = (location[0] + movement[0], location[1] + movement[1])
                 # Add pheromone
@@ -151,6 +155,21 @@ class Environment:
             Spawn queue
         '''
         self.spawn_queue = []
+    
+    def spawn_agents(self, agents):
+        for i in range(min(self.spawn_rate, len(self.spawn_queue))):
+            new_agent = agents[self.spawn_queue.pop(0)]
+            new_agent.active = 1
+            new_agent.location = (1,0)      # spawn agents next to hive
+            self.agent_grid[1][0] = 1
+            self.agent_nums[1][0] += 1
+            # print(agents[0])
+    
+    def update_observation(self, agents):
+        for agent in agents:
+            if agent.active == 1:
+                agent.observation = self.get_observation(agent.location)
+                # self.visualize_map(agent.observation[0])
 
     def run_episode(self, agents, grid=None, visualize=False):
         # Add all agents to spawn queue
@@ -161,18 +180,10 @@ class Environment:
         # Run through time steps
         for time_step in range(self.total_steps):
             # Spawn agents if they can be spawned
-            for i in range(min(self.spawn_rate, len(self.spawn_queue))):
-                new_agent = agents[self.spawn_queue.pop(0)]
-                new_agent.active = 1
-                new_agent.location = (1,0)      # spawn agents next to hive
-                self.agent_grid[1][0] = 1
-                self.agent_nums[1][0] += 1
-                # print(agents[0])
+            self.spawn_agents(agents)
+
             # Update observation for every active agent
-            for agent in agents:
-                if agent.active == 1:
-                    agent.observation = self.get_observation(agent.location)
-                    # self.visualize_map(agent.observation[0])
+            self.update_observation(agents)
                     
             # Environment.step
             self.step(agents)
@@ -182,11 +193,13 @@ class Environment:
                 env_observations.append((self.agent_grid.copy(), self.static_grid.copy(), self.dynamic_grid.copy()))
         
         food_collected = self.total_food
+
         if visualize:
             print('grid')
             self.visualize_map(self.static_grid)
             print('static')
             self.visualize_map(self.agent_grid)
+        
         # Reset environment
         self.reset(grid)
         
