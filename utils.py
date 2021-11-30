@@ -31,6 +31,52 @@ def check_valid(grid, env_params, throw_error=True):
                 and (total_food == env_params['grid']['food'])):
             return True
         return False
+    
+def get_food(cell_value, env_params):
+    # helper method transforming cell value to amount of food
+    assert(cell_value >= env_params['coding_dict']['food_start'])
+    food = cell_value-env_params['coding_dict']['food_start']+1
+    assert(food <= env_params['max_food'])
+    return food
+
+def get_baseline_food(cell_value, total_food, env_params):
+    # helper method to calculate total food minus the current cell's food
+    total_food = total_food-get_food(cell_value, env_params)
+
+def get_grid_food(food, env_params):
+    # helper method transforming amount of food to cell value
+    assert(food <= env_params['max_food'])
+    return env_params['coding_dict']['food_start']+food-1
+
+def generate_random_grid(env_params):
+    # randomly select the number of blockades
+    num_blockades = random.randint(1, env_params['grid']['blockade'])
+
+    grid = np.zeros(env_params['N']*env_params['M']-num_blockades)
+
+    # insert the blockades into the grid
+    grid = np.insert(grid, np.random.choice(len(grid), size=num_blockades), np.ones(num_blockades))
+    grid = grid*env_params['coding_dict']['blockade']
+
+    # place hive at (0,0), (1,0), and (0,1)
+    grid[0] = env_params['coding_dict']['hive']
+    grid[1] = env_params['coding_dict']['hive']
+    grid[env_params['M']] = env_params['coding_dict']['hive']
+
+    # place food across the grid
+    food_left = env_params['grid']['food']
+    potential_food_idxs = list(np.where(grid == env_params['coding_dict']['empty'])[0])
+    random.shuffle(potential_food_idxs)
+    while food_left > 0:
+        food = random.randint(1, min(food_left, env_params['max_food']))
+        food_left -= food
+        grid[potential_food_idxs[0]] = get_grid_food(food, env_params)
+        del potential_food_idxs[0]
+
+    grid = np.reshape(grid, (env_params['N'],env_params['M']))
+
+    check_valid(grid, env_params)
+    return grid
 
 def process_grids(observation, env_params, visual=True):
     agent_grid, static_grid, dynamic_grid = observation

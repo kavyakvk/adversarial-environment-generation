@@ -6,52 +6,6 @@ from tqdm import tqdm
 import copy
 
 class GeneticAlgorithm:
-    def get_food(self, cell_value):
-        # helper method transforming cell value to amount of food
-        assert(cell_value >= self.env_params['coding_dict']['food_start'])
-        food = cell_value-self.env_params['coding_dict']['food_start']+1
-        assert(food <= self.env_params['max_food'])
-        return food
-    
-    def get_baseline_food(self, cell_value, total_food):
-        # helper method to calculate total food minus the current cell's food
-        total_food = total_food-self.get_food(cell_value)
-    
-    def get_grid_food(self, food):
-        # helper method transforming amount of food to cell value
-        assert(food <= self.env_params['max_food'])
-        return self.env_params['coding_dict']['food_start']+food-1
-
-    def generate_random_grid(self):
-        # randomly select the number of blockades
-        num_blockades = random.randint(1, self.env_params['grid']['blockade'])
-
-        grid = np.zeros(self.env_params['N']*self.env_params['M']-num_blockades)
-
-        # insert the blockades into the grid
-        grid = np.insert(grid, np.random.choice(len(grid), size=num_blockades), np.ones(num_blockades))
-        grid = grid*self.env_params['coding_dict']['blockade']
-
-        # place hive at (0,0), (1,0), and (0,1)
-        grid[0] = self.env_params['coding_dict']['hive']
-        grid[1] = self.env_params['coding_dict']['hive']
-        grid[self.env_params['M']] = self.env_params['coding_dict']['hive']
-
-        # place food across the grid
-        food_left = self.env_params['grid']['food']
-        potential_food_idxs = list(np.where(grid == self.env_params['coding_dict']['empty'])[0])
-        random.shuffle(potential_food_idxs)
-        while food_left > 0:
-            food = random.randint(1, min(food_left, self.env_params['max_food']))
-            food_left -= food
-            grid[potential_food_idxs[0]] = self.get_grid_food(food)
-            del potential_food_idxs[0]
-
-        grid = np.reshape(grid, (self.env_params['N'],self.env_params['M']))
-
-        utils.check_valid(grid, self.env_params)
-        return grid
-
     def get_fitness(self, grid, agents):
         env = environment.Environment(self.env_params, grid)
         for agent in agents:
@@ -75,13 +29,13 @@ class GeneticAlgorithm:
                     else:
                         cell_food = 0
                         if grid[x,y] != self.env_params['coding_dict']['empty']:
-                            cell_food = self.get_food(grid[x,y])
+                            cell_food = utils.get_food(grid[x,y], self.env_params)
                         if cell_food < self.env_params['max_food']:
                             delta_food = self.env_params['grid']['food']-(total_food-cell_food)
                             if delta_food > 0:
                                 food = random.randint(cell_food+1, min(self.env_params['max_food'], delta_food))
                             total_food = total_food+(food-cell_food)
-                            grid[x,y] = self.get_grid_food(food)
+                            grid[x,y] = utils.get_grid_food(food, self.env_params)
                     #total_food = utils.calculate_food(grid, self.env_params) 
         elif total_food > self.env_params['grid']['food']:
             # if the amount of placed food is too high
@@ -93,7 +47,7 @@ class GeneticAlgorithm:
                     if total_food == self.env_params['grid']['food']:
                         break
                     else:
-                        cell_food = self.get_food(grid[x,y])
+                        cell_food = utils.get_food(grid[x,y], self.env_params)
                         delta_food = self.env_params['grid']['food']-(total_food-cell_food)
                         food = delta_food
                         if delta_food < 0:
@@ -102,7 +56,7 @@ class GeneticAlgorithm:
                         if food == 0:
                             grid[x,y] = self.env_params['coding_dict']['empty']
                         else:
-                            grid[x,y] = self.get_grid_food(food)
+                            grid[x,y] = utils.get_grid_food(food, self.env_params)
                     #total_food = utils.calculate_food(grid, self.env_params) 
         return grid
 
@@ -140,11 +94,11 @@ class GeneticAlgorithm:
                     if grid[x,y] >= self.env_params['coding_dict']['food_start']:
                         # randomly add / subtract food
                         food = random.randint(0, self.env_params['max_food'])
-                        total_food = total_food-self.get_food(grid[x,y])+food
+                        total_food = total_food-utils.get_food(grid[x,y], self.env_params)+food
                         if food == 0:
                             grid[x,y] = self.env_params['coding_dict']['empty']
                         else:
-                            grid[x,y] = self.get_grid_food(food)
+                            grid[x,y] = utils.get_grid_food(food, self.env_params)
                     elif grid[x,y] == self.env_params['coding_dict']['blockade']:
                         # flip blockade to empty
                         grid[x,y] = self.env_params['coding_dict']['empty']
@@ -154,7 +108,7 @@ class GeneticAlgorithm:
                             # flip empty to food
                             food = random.randint(1, self.env_params['max_food'])
                             total_food = total_food+food
-                            grid[x,y] = self.get_grid_food(food)
+                            grid[x,y] = utils.get_grid_food(food, self.env_params)
                         else:
                             # flip empty to blockade
                             grid[x,y] = self.env_params['coding_dict']['blockade']
@@ -172,13 +126,13 @@ class GeneticAlgorithm:
     def __init__(self, population_size, env_params):
         self.population_size = population_size
         self.env_params = env_params
-        self.population = [self.generate_random_grid() for i in range(self.population_size)]
+        self.population = [utils.generate_random_grid(self.env_params) for i in range(self.population_size)]
 
         for i in range(self.population_size):
             grid = self.population[i]
             # check feasibility of solution
             while not self.check_feasibility(grid):
-                self.population[i] = self.generate_random_grid()
+                self.population[i] = utils.generate_random_grid(self.env_params)
                 grid = self.population[i]
     
     def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False):
