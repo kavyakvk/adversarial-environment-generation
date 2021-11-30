@@ -291,6 +291,7 @@ class DQNAgent(Agent):
                 actions_tensor = torch.tensor(actions, device=DEVICE)
                 
                 # Step actions in the environment
+                environment_actions = [(env.environment_actions[action], env_params['pheromone']['step']) if agents[agent_idx].food else (env.environment_actions[action], env_params['pheromone']['step']) for agent_idx in range(len(agents))]
                 rewards = env.step(agents, actions)
                 rewards_tensor = torch.tensor(rewards, device=DEVICE)
 
