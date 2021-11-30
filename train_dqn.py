@@ -1,5 +1,7 @@
 import agent
 import utils
+import environment
+
 import copy
 import pickle
 import torch
@@ -37,7 +39,9 @@ def train(grid, agents, env_params, num_episodes=50):
             # Get observation for each agent and calculate an action for each agent
             observations = env.update_observation(agents)
             for agent_idx in range(len(agents)):
-                observations[agent_idx] = utils.prepare_observation(obs, (agent.screen_height, agent.screen_width, 3))
+                agent = agents[agent_idx]
+                obs = observations[agent_idx]
+                observations[agent_idx] = utils.prepare_observation(obs, env_params, (agent.screen_height, agent.screen_width))
             
             actions = []
             for agent_idx in range(len(agents)):
@@ -58,7 +62,7 @@ def train(grid, agents, env_params, num_episodes=50):
             rewards_tensor = torch.tensor(rewards, device=DEVICE)
 
             # Get new observation for each agent
-            next_observations = [prepare_observation(obs, (agent.screen_height, agent.screen_width, 3)) for obs in env.update_observation(agents)]
+            next_observations = [prepare_observation(obs, env_params, (agent.screen_height, agent.screen_width)) for obs in env.update_observation(agents)]
 
             # Store the transitions in memory
             for agent_idx in range(len(agents)):

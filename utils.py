@@ -3,6 +3,8 @@ from queue import Queue
 import random
 import copy
 
+from PIL import Image
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -119,13 +121,13 @@ def process_grids(observation, env_params, visual=True):
                 set_channel(i, j, dynamic_grid_processed, [greyscale_val]*3)
     return (agent_static_grid_processed, dynamic_grid_processed)
 
-def prepare_observation(observation, resize_shape=None, training=True):
+def prepare_observation(observation, env_params, resize_shape=None, training=True):
     resize = T.Compose([T.ToPILImage(),
                     T.Resize(resize_shape, interpolation=Image.CUBIC),
                     T.ToTensor()])
     
     # Add color channels
-    agent_static_grid, dynamic_grid = process_grids(observation, visual=False)
+    agent_static_grid, dynamic_grid = process_grids(observation, env_params, visual=False)
     appended_grid = np.append(agent_static_grid, dynamic_grid, axis=0)
     # Change H,W,C --> C,H,W
     appended_grid = appended_grid.transpose((2, 0, 1))
