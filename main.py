@@ -35,4 +35,6 @@ print(ENV_PARAMS)
 
 ga = GeneticAlgorithm(population_size=100, env_params=ENV_PARAMS)
 test_agents = [agent.SwarmAgent(i, ENV_PARAMS) for i in range(5)]
-ga.run(rate_elitism=0.1, rate_mutation=0.1, iterations=100, agents=test_agents, verbose=True) 
+grids, fitness_values = ga.run(rate_elitism=0.1, rate_mutation=0.1, iterations=100, agents=test_agents, verbose=True) 
+print('grids:', grids)
+print('fitness values:', fitness_values)
