@@ -3,6 +3,7 @@ import environment
 import utils
 import numpy as np
 from tqdm import tqdm
+import copy
 
 class GeneticAlgorithm:
     def calculate_food(self, grid):
