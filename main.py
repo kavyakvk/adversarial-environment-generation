@@ -1,6 +1,7 @@
 from geneticalg import GeneticAlgorithm
 import agent
 import copy
+import pickle
 
 # ant black, obstacle blue, hive yellow/brown, food green, empty 
 
@@ -38,3 +39,7 @@ test_agents = [agent.SwarmAgent(i, ENV_PARAMS) for i in range(5)]
 grids, fitness_values = ga.run(rate_elitism=0.1, rate_mutation=0.1, iterations=100, agents=test_agents, verbose=True) 
 print('grids:', grids)
 print('fitness values:', fitness_values)
+with open('Pickled/fitness_values') as f:
+    pickle.dump(fitness_values, f)
+with open('Pickled/grids') as f:
+    pickle.dump(grids, f)
