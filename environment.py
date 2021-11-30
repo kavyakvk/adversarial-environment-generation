@@ -90,7 +90,7 @@ class Environment:
                 if np.any(np.isin(np.arange(self.env_params['coding_dict']['food_start'], 
                                             self.env_params['coding_dict']['food_start']+self.env_params['max_food']),
                                     agent_observation[1])):
-                    step_rewards[agent] += 0.25
+                    step_rewards[agent_idx] += 0.25
 
                 location, food = agent.get_state()
                 new_location = (location[0] + movement[0], location[1] + movement[1])
