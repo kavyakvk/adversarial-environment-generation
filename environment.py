@@ -92,7 +92,7 @@ class Environment:
                 if self.static_grid[new_location[0]][new_location[1]] >= self.env_params['coding_dict']['food_start'] and agent.food == 0:
                     agent.food = 1
                     if self.static_grid[new_location[0]][new_location[1]] == self.env_params['coding_dict']['food_start']:
-                        self.static_grid[new_location[0]][new_location[1]] == 0    # now no more food
+                        self.static_grid[new_location[0]][new_location[1]] = 0    # now no more food
                     else:
                         self.static_grid[new_location[0]][new_location[1]] -= 1    # decrement food by 1
                     agent.bfs_active = 1        # activate bfs
