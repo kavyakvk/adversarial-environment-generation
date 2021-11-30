@@ -35,7 +35,7 @@ class Environment:
         '''
             BFS
         '''
-        self.spt = [[q[0] for q in r] for r in expert_navigation_policy_set(self.static_grid, (0,0))]
+        self.spt = [[q[0] for q in r] for r in expert_navigation_policy_set(self.static_grid, (0,0), env_params['coding_dict']['blockade'])]
         
         '''
             Params

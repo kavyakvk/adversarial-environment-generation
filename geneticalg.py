@@ -188,7 +188,7 @@ class GeneticAlgorithm:
         return grid
 
     def check_feasibility(self, grid):
-        spt = [[q[0] for q in r] for r in utils.expert_navigation_policy_set(grid, (0,0))]
+        spt = [[q[0] for q in r] for r in utils.expert_navigation_policy_set(grid, (0,0), self.env_params['coding_dict']['blockade'])]
         for x in range(self.env_params['N']):
             for y in range(self.env_params['M']):
                 if len(spt[x][y]) == 0 and grid[x][y] >= self.env_params['coding_dict']['food_start']:
