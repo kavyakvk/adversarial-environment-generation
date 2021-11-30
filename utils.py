@@ -3,6 +3,12 @@ from queue import Queue
 import random
 import copy
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import torchvision.transforms as T
+
 def calculate_food(grid, env_params):
     counts = np.bincount(grid.flatten().astype('int64'))
     food_counts = counts[env_params['coding_dict']['food_start']:]
@@ -113,6 +119,23 @@ def process_grids(observation, env_params, visual=True):
                 set_channel(i, j, dynamic_grid_processed, [greyscale_val]*3)
     return (agent_static_grid_processed, dynamic_grid_processed)
 
+def prepare_observation(observation, resize_shape=None, training=True):
+    resize = T.Compose([T.ToPILImage(),
+                    T.Resize(resize_shape, interpolation=Image.CUBIC),
+                    T.ToTensor()])
+    
+    # Add color channels
+    agent_static_grid, dynamic_grid = process_grids(observation, visual=False)
+    appended_grid = np.append(agent_static_grid, dynamic_grid, axis=0)
+    # Change H,W,C --> C,H,W
+    appended_grid = appended_grid.transpose((2, 0, 1))
+    appended_grid = torch.from_numpy(appended_grid)
+    
+    if training:
+        # Add a batch dimension --> B, C, H, W
+        return resize(appended_grid).unsqueeze(0)
+    else:
+        return resize(appended_grid)
 
 # get array of movements to take from each square towards hive
 # avoids obstacles (coded as 4 by default)

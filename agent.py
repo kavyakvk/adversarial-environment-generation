@@ -169,14 +169,10 @@ Transition = namedtuple('Transition',
                                 ('state', 'action', 'next_state', 'reward'))
 
 class DQNAgent(Agent):
-    def __init__(self, id, env_params):
-        self.env_params = self.env_params
-        obs_window = self.env_params['observation_radius']*2+1
-        self.input_shape = (obs_window, obs_window)
+    def __init__(self, id, env_params, spt=None):
+        super().__init__(id, env_params, spt)
 
-        self.resize = T.Compose([T.ToPILImage(),
-                    T.Resize(40, interpolation=Image.CUBIC),
-                    T.ToTensor()])
+        obs_window = self.env_params['observation_radius']*2+1
         
         self.BATCH_SIZE = 128
         self.GAMMA = 0.999
@@ -187,34 +183,18 @@ class DQNAgent(Agent):
 
         self.screen_height, self.screen_width = 100, 200
 
-        self.n_actions = 5
-        self.policy_net = DQN(screen_height, screen_width, n_actions).to(device)
-        self.target_net = DQN(screen_height, screen_width, n_actions).to(device)
+        self.environment_actions = self.env_params['env_actions']
+        self.n_actions = len(self.environment_actions)
+        self.policy_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(DEVICE)
+        self.target_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(DEVICE)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
 
-        self.optimizer = optim.RMSprop(policy_net.parameters())
+        self.optimizer = optim.RMSprop(self.policy_net.parameters())
         self.memory = ReplayMemory(10000)    
         self.steps_done = 0
-
-
-        super(self)
     
-    def prepare_observation(self, observation, training=True):
-        # Add color channels
-        agent_static_grid, dynamic_grid = utils.process_grids(observation, visual=False)
-        appended_grid = np.append(agent_static_grid, dynamic_grid, axis=0)
-        # Change H,W,C --> C,H,W
-        appended_grid = appended_grid.transpose((2, 0, 1))
-        
-        if training:
-            # Add a batch dimension --> B, C, H, W
-            appended_grid = torch.from_numpy(appended_grid)
-            return self.resize(appended_grid).unsqueeze(0)
-        else:
-            return self.resize(appended_grid)
-    
-    def select_action(self, state):
+    def get_action(self, observation, valid_movements, train=False):
         sample = random.random()
         eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
             math.exp(-1. * self.steps_done / self.EPS_DECAY)
@@ -224,9 +204,18 @@ class DQNAgent(Agent):
                 # t.max(1) will return largest column value of each row.
                 # second column on max result is index of where max element was
                 # found, so we pick action with the larger expected reward.
-                return self.policy_net(state).max(1)[1].view(1, 1)
+                opt_action_id = self.policy_net(observation).max(1)[1].view(1, 1)
+                opt_action = self.environment_actions[int(opt_action_id)]
+                if train:
+                    return opt_action_id
+                else:
+                    return opt_action
+
         else:
-            return torch.tensor([[random.randrange(self.n_actions)]], device=DEVICE, dtype=torch.long)
+            if train:
+                return torch.tensor([[random.randrange(self.n_actions)]], device=DEVICE, dtype=torch.long)
+            else:
+                return random.choice(valid_movements)
 
     def optimize_model():
         if len(self.memory) < self.BATCH_SIZE:
@@ -273,58 +262,6 @@ class DQNAgent(Agent):
         for param in self.policy_net.parameters():
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
-    
-    def train(self, env_params, grid, agents, num_episodes=50):
-        env = environment.Environment(env_params, grid)
-
-        for i_episode in range(num_episodes):
-            # Initialize the environment and spawn queue
-            env.reset(grid)
-            env.initialize_spawn_queue(agents)
-            old_observations = [self.prepare_observation(env.get_empty_observation()) for agent in agents]
-            observations = None
-            
-            for step in range(env_params['steps']):
-                # Spawn agents if necessary
-                env.spawn_agents(agents)
-
-                # Get observation for each agent and calculate an action for each agent
-                observations = [self.prepare_observation(obs) for obs in env.update_observation(agents)]
-                actions = []
-                for agent_idx in range(len(agents)):
-                    agent = agents[agent_idx]
-                    state = observations[agent_idx]-old_observations[agent_idx]
-                    action = self.select_action(state)
-                    actions.append(action)
-                actions_tensor = torch.tensor(actions, device=DEVICE)
-                
-                # Step actions in the environment
-                environment_actions = [(env.environment_actions[action], env_params['pheromone']['step']) if agents[agent_idx].food else (env.environment_actions[action], env_params['pheromone']['step']) for agent_idx in range(len(agents))]
-                rewards = env.step(agents, actions)
-                rewards_tensor = torch.tensor(rewards, device=DEVICE)
-
-                # Get new observation for each agent
-                next_observations = [self.prepare_observation(obs) for obs in env.update_observation(agents)]
-
-                # Store the transitions in memory
-                for agent_idx in range(len(agents)):
-                    state = observations[agent_idx]-old_observations[agent_idx]
-                    next_state = next_observations[agent_idx]-observations[agent_idx]
-                    self.memory.push(state, actions_tensor[agent_idx], next_state, rewards_tensor[agent_idx])
-
-                # Save observations
-                old_observations = observations
-
-                # Perform one step of the optimization (on the policy network)
-                self.optimize_model()
-
-            # Update the target network, copying all weights and biases in DQN
-            if i_episode % self.TARGET_UPDATE == 0:
-                self.target_net.load_state_dict(self.policy_net.state_dict())
-
-
-    def get_action(self, observation, valid_movements):
-        return 1
 
 
         

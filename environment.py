@@ -29,7 +29,7 @@ class Environment:
             self.static_grid[0][1] = self.env_params['coding_dict']['hive']
             self.static_grid[self.rows-1][self.cols-1] = 9              # Place food in the corner
         utils.check_valid(self.static_grid, env_params)
-        self.environment_actions = [(0,0),(0,-1), (0,1), (1,0), (-1,0)]
+        self.environment_actions = env_params['env_actions']
 
         '''
             BFS
@@ -80,10 +80,18 @@ class Environment:
         for agent_idx in range(len(agents)):
             agent = agents[agent_idx]
             if agent.active == 1:
+                agent_observation = self.get_observation(agent.location)
                 if ((actions is not None) and (actions[agent_idx] is not None)):
                     movement, pheromone = actions[agent_idx]
                 else:
-                    movement, pheromone = agent.get_action(self.get_observation(agent.location), self.get_valid_movements(agent))
+                    movement, pheromone = agent.get_action(agent_observation, self.get_valid_movements(agent))
+                
+                # reward if agent can see food
+                if np.any(np.isin(np.arange(self.env_params['coding_dict']['food_start'], 
+                                            self.env_params['coding_dict']['food_start']+self.env_params['max_food']),
+                                    agent_observation[1])):
+                    step_rewards[agent] += 0.25
+
                 location, food = agent.get_state()
                 new_location = (location[0] + movement[0], location[1] + movement[1])
                 # Add pheromone
@@ -105,6 +113,8 @@ class Environment:
                     else:
                         self.static_grid[new_location[0]][new_location[1]] -= 1    # decrement food by 1
                     agent.bfs_active = 1        # activate bfs
+                    # agent reward for picking up food
+                    step_rewards[agent_idx] += 5
                 # If agent is now at hive
                 if self.static_grid[new_location[0]][new_location[1]] == self.env_params['coding_dict']['hive']:
                     agent.active = 0
