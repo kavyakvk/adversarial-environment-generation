@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import copy
-from utils import *
+import utils
 
 ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
                             'N': 20, 'M': 20, 'max_food': 5, 'observation_radius': 5, 'steps': 5000, 'spawn_rate': 2, 
@@ -22,20 +22,19 @@ class Environment:
 
         if grid is not None:        # if there is a grid passed through
             self.static_grid = copy.deepcopy(grid)
-            assert(self.static_grid[0][0] == self.env_params['coding_dict']['hive'])
-            assert(self.static_grid[1][0] == self.env_params['coding_dict']['hive'])
-            assert(self.static_grid[0][1] == self.env_params['coding_dict']['hive'])
         else:                       # for testing (if a grid isn't provided)
             self.static_grid = np.zeros((self.rows, self.cols), dtype=float)
             self.static_grid[0][0] = env_params['coding_dict']['hive']
+            self.static_grid[1][0] = self.env_params['coding_dict']['hive']
+            self.static_grid[0][1] = self.env_params['coding_dict']['hive']
             self.static_grid[self.rows-1][self.cols-1] = 9              # Place food in the corner
-        
+        utils.check_valid(self.static_grid, env_params)
         self.environment_actions = [(0,0),(0,-1), (0,1), (1,0), (-1,0)]
 
         '''
             BFS
         '''
-        self.spt = [[q[0] for q in r] for r in expert_navigation_policy_set(self.static_grid, (0,0), env_params['coding_dict']['blockade'])]
+        self.spt = [[q[0] for q in r] for r in utils.expert_navigation_policy_set(self.static_grid, (0,0), env_params['coding_dict']['blockade'])]
         
         '''
             Params

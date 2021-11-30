@@ -3,6 +3,35 @@ from queue import Queue
 import random
 import copy
 
+def calculate_food(grid, env_params):
+    counts = np.bincount(grid.flatten().astype('int64'))
+    food_counts = counts[env_params['coding_dict']['food_start']:]
+    assert(len(food_counts) <= env_params['max_food'])
+    if len(food_counts) != env_params['max_food']:
+        food_counts = np.append(food_counts, np.zeros(env_params['max_food']-len(food_counts)))
+    total_food = np.dot(np.arange(1, env_params['max_food']+1), food_counts)
+    return total_food
+
+def calculate_blockades(grid, env_params):
+    counts = np.bincount(grid.flatten().astype('int64'))
+    return counts[env_params['coding_dict']['blockade']]
+
+def check_valid(grid, env_params, throw_error=True):
+    assert(grid[0][0] == env_params['coding_dict']['hive'])
+    assert(grid[1][0] == env_params['coding_dict']['hive'])
+    assert(grid[0][1] == env_params['coding_dict']['hive'])
+    counts = np.bincount(grid.flatten().astype('int64'))
+    num_blockades = calculate_blockades(grid, env_params)
+    total_food = calculate_food(grid, env_params)
+    if throw_error:
+        assert(num_blockades <= env_params['grid']['blockade'])
+        assert(total_food == env_params['grid']['food'])
+    else:
+        if ((num_blockades <= env_params['grid']['blockade']) 
+                and (total_food == env_params['grid']['food'])):
+            return True
+        return False
+
 def process_grids(observation, env_params, visual=True):
     agent_grid, static_grid, dynamic_grid = observation
     N = env_params['N']

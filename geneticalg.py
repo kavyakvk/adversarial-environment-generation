@@ -6,32 +6,6 @@ from tqdm import tqdm
 import copy
 
 class GeneticAlgorithm:
-    def calculate_food(self, grid):
-        counts = np.bincount(grid.flatten().astype('int64'))
-        food_counts = counts[self.env_params['coding_dict']['food_start']:]
-        assert(len(food_counts) <= self.env_params['max_food'])
-        if len(food_counts) != self.env_params['max_food']:
-            food_counts = np.append(food_counts, np.zeros(self.env_params['max_food']-len(food_counts)))
-        total_food = np.dot(np.arange(1, self.env_params['max_food']+1), food_counts)
-        return total_food
-
-    def calculate_blockades(self, grid):
-        counts = np.bincount(grid.flatten().astype('int64'))
-        return counts[self.env_params['coding_dict']['blockade']]
-
-    def check_valid(self, grid, throw_error=True):
-        counts = np.bincount(grid.flatten().astype('int64'))
-        num_blockades = self.calculate_blockades(grid)
-        total_food = self.calculate_food(grid)
-        if throw_error:
-            assert(num_blockades <= self.env_params['grid']['blockade'])
-            assert(total_food == self.env_params['grid']['food'])
-        else:
-            if ((num_blockades <= self.env_params['grid']['blockade']) 
-                    and (total_food == self.env_params['grid']['food'])):
-                return True
-            return False
-
     def get_food(self, cell_value):
         # helper method transforming cell value to amount of food
         assert(cell_value >= self.env_params['coding_dict']['food_start'])
@@ -61,7 +35,7 @@ class GeneticAlgorithm:
         # place hive at (0,0), (1,0), and (0,1)
         grid[0] = self.env_params['coding_dict']['hive']
         grid[1] = self.env_params['coding_dict']['hive']
-        grid[self.M+1] = self.env_params['coding_dict']['hive']
+        grid[self.env_params['M']] = self.env_params['coding_dict']['hive']
 
         # place food across the grid
         food_left = self.env_params['grid']['food']
@@ -75,7 +49,7 @@ class GeneticAlgorithm:
 
         grid = np.reshape(grid, (self.env_params['N'],self.env_params['M']))
 
-        self.check_valid(grid)
+        utils.check_valid(grid, self.env_params)
         return grid
 
     def get_fitness(self, grid, agents):
@@ -86,7 +60,7 @@ class GeneticAlgorithm:
         return -1*food_collected/len(agents)
     
     def fix_food(self, grid):
-        total_food = self.calculate_food(grid)
+        total_food = utils.calculate_food(grid, self.env_params)
         if total_food < self.env_params['grid']['food']:
             while total_food != self.env_params['grid']['food']: 
                 # if the amount of placed food is too low
@@ -108,7 +82,7 @@ class GeneticAlgorithm:
                                 food = random.randint(cell_food+1, min(self.env_params['max_food'], delta_food))
                             total_food = total_food+(food-cell_food)
                             grid[x,y] = self.get_grid_food(food)
-                    #total_food = self.calculate_food(grid) 
+                    #total_food = utils.calculate_food(grid, self.env_params) 
         elif total_food > self.env_params['grid']['food']:
             # if the amount of placed food is too high
             while total_food != self.env_params['grid']['food']:
@@ -129,11 +103,11 @@ class GeneticAlgorithm:
                             grid[x,y] = self.env_params['coding_dict']['empty']
                         else:
                             grid[x,y] = self.get_grid_food(food)
-                    #total_food = self.calculate_food(grid) 
+                    #total_food = utils.calculate_food(grid, self.env_params) 
         return grid
 
     def fix_blockade(self, grid):
-        total_blockades = self.calculate_blockades(grid)
+        total_blockades = utils.calculate_blockades(grid, self.env_params)
         if total_blockades > self.env_params['grid']['blockade']:
             blockades_idxs = list(zip(*np.where(grid == self.env_params['coding_dict']['blockade'])))
             random.shuffle(blockades_idxs)
@@ -238,7 +212,7 @@ class GeneticAlgorithm:
             for j in range(len(mutation_candidates)):
                 grid = self.get_mutated(new_population[j], rate_mutation)
                 grid = self.fix_blockade(self.fix_food(grid))
-                self.check_valid(grid)
+                utils.check_valid(grid, self.env_params)
                 # check feasibility of solution
                 if self.check_feasibility(grid):
                     new_population[j] = grid
@@ -247,7 +221,7 @@ class GeneticAlgorithm:
 
             for grid in new_population:
                 # Non-mutated may need fixing
-                if not self.check_valid(grid, throw_error=False):
+                if not utils.check_valid(grid, self.env_params, throw_error=False):
                     grid = self.fix_blockade(self.fix_food(grid))
             
             #update population
