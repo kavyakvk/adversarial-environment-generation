@@ -192,7 +192,7 @@ class DQNAgent(Agent):
 
         super(self)
     
-    def prepare_observation(self, observation, training=False):
+    def prepare_observation(self, observation, training=True):
         # Add color channels
         agent_static_grid, dynamic_grid = utils.process_grids(observation, visual=False)
         appended_grid = np.append(agent_static_grid, dynamic_grid, axis=0)
@@ -270,31 +270,41 @@ class DQNAgent(Agent):
         env = environment.Environment(env_params, grid)
 
         for i_episode in range(num_episodes):
-            # Initialize the environment and state
+            # Initialize the environment and spawn queue
             env.reset(grid)
-            last_screen = get_screen()
-            current_screen = get_screen()
-            state = current_screen - last_screen
+            env.initialize_spawn_queue(agents)
+            old_observations = [self.prepare_observation(env.get_empty_observation()) for agent in agents]
+            observations = None
+            
             for step in range(env_params['steps']):
-                # Select and perform an action for each agent
-                for agent_idx in range(agents):
-                action = select_action(state)
-                _, reward, done, _ = env.step(action.item())
-                reward = torch.tensor([reward], device=device)
+                # Spawn agents if necessary
+                env.spawn_agents(agents)
 
-                # Observe new state
-                last_screen = current_screen
-                current_screen = get_screen()
-                if not done:
-                    next_state = current_screen - last_screen
-                else:
-                    next_state = None
+                # Get observation for each agent and calculate an action for each agent
+                observations = [self.prepare_observation(obs) for obs in env.update_observation(agents)]
+                actions = []
+                for agent_idx in range(len(agents)):
+                    agent = agents[agent_idx]
+                    state = observations[agent_idx]-old_observations[agent_idx]
+                    action = self.select_action(state)
+                    actions.append(action)
+                actions_tensor = torch.tensor(actions, device=DEVICE)
+                
+                # Step actions in the environment
+                rewards = env.step(agents, actions)
+                rewards_tensor = torch.tensor(rewards, device=DEVICE)
 
-                # Store the transition in memory
-                self.memory.push(state, action, next_state, reward)
+                # Get new observation for each agent
+                next_observations = [self.prepare_observation(obs) for obs in env.update_observation(agents)]
 
-                # Move to the next state
-                state = next_state
+                # Store the transitions in memory
+                for agent_idx in range(len(agents)):
+                    state = observations[agent_idx]-old_observations[agent_idx]
+                    next_state = next_observations[agent_idx]-observations[agent_idx]
+                    self.memory.push(state, actions_tensor[agent_idx], next_state, rewards_tensor[agent_idx])
+
+                # Save observations
+                old_observations = observations
 
                 # Perform one step of the optimization (on the policy network)
                 self.optimize_model()

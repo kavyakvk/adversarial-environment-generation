@@ -27,6 +27,8 @@ class Environment:
             self.static_grid[0][0] = env_params['coding_dict']['hive']
             self.static_grid[self.rows-1][self.cols-1] = 9              # Place food in the corner
         
+        self.environment_actions = [(0,0),(0,-1), (0,1), (1,0), (-1,0)]
+
         '''
             BFS
         '''
@@ -65,7 +67,8 @@ class Environment:
     
     def step(self, agents, actions=None):
         self.time_step += 1
-
+        step_rewards = [0 for agent in range(len(agents))]
+        
         # Pheromone evaporation
         for i in range(self.rows):
             for j in range(self.cols):
@@ -106,12 +109,17 @@ class Environment:
                     self.spawn_queue.append(agent.id)
                     self.total_food += agent.food
                     agent.food = 0
-
-    def get_observation(self, location):
-        # Returns partially observable observation centered around location
+        return step_rewards
+    
+    def get_empty_observation(self):
         observation_agent = np.zeros((2*self.observation_radius + 1, 2*self.observation_radius + 1), dtype=float)
         observation_grid = np.zeros((2*self.observation_radius + 1, 2*self.observation_radius + 1), dtype=float)
         observation_dynamic = np.zeros((2*self.observation_radius + 1, 2*self.observation_radius + 1), dtype=float)
+        return observation_agent, observation_grid, observation_dynamic 
+
+    def get_observation(self, location):
+        # Returns partially observable observation centered around location
+        observation_agent, observation_grid, observation_dynamic = self.get_empty_observation()
 
         upper_left_loc = (location[0] - self.observation_radius, location[1] - self.observation_radius)
         for i in range(self.observation_radius * 2 + 1):
@@ -156,6 +164,9 @@ class Environment:
         '''
         self.spawn_queue = []
     
+    def initialize_spawn_queue(self, agents):
+        self.spawn_queue = [i for i in range(len(agents))]  
+    
     def spawn_agents(self, agents):
         for i in range(min(self.spawn_rate, len(self.spawn_queue))):
             new_agent = agents[self.spawn_queue.pop(0)]
@@ -166,14 +177,21 @@ class Environment:
             # print(agents[0])
     
     def update_observation(self, agents):
+        observations = []
         for agent in agents:
             if agent.active == 1:
-                agent.observation = self.get_observation(agent.location)
+                obs = self.get_observation(agent.location)
+                agent.observation = obs
                 # self.visualize_map(agent.observation[0])
+                observations.append(obs)
+            else:
+                observations.append(self.get_empty_observation())
+        return observations
+
 
     def run_episode(self, agents, grid=None, visualize=False):
         # Add all agents to spawn queue
-        self.spawn_queue = [i for i in range(len(agents))]  
+        self.initialize_spawn_queue(agents)
         
         env_observations = [(self.agent_grid.copy(), self.static_grid.copy(), self.dynamic_grid.copy())]
 
