@@ -40,9 +40,9 @@ def process_grids(observation, env_params, visual=True):
 
 
 # get array of movements to take from each square towards hive
-# avoids obstacles (coded as 3)
+# avoids obstacles (coded as 4 by default)
 # desc: static grid; loc: use (0,0) to go to hive
-def expert_navigation_policy_set(desc, loc):
+def expert_navigation_policy_set(desc, loc, obstacle_code = 4):
     (loc_r, loc_c) = loc
     num_rows = len(desc)
     num_cols = len(desc[0])
@@ -51,7 +51,7 @@ def expert_navigation_policy_set(desc, loc):
     spt = [[[[], np.inf] for _ in range(num_cols)] for _ in range(num_rows)]
     
     
-    spt[loc_r][loc_c][0].append(-1) # after arriving at dest, no action should be taken
+#     spt[loc_r][loc_c][0].append(-1) # after arriving at dest, no action should be taken
     spt[loc_r][loc_c][1] = 0
     
     q = Queue()
@@ -62,7 +62,7 @@ def expert_navigation_policy_set(desc, loc):
         for action in ['N', 'E', 'S', 'W']: 
             if action == 'S':
                 (next_r, next_c) = (min(row + 1, max_row), col)
-                if spt[next_r][next_c][1] >= cur_dist + 1 and desc[next_r][next_c]!= 3:
+                if spt[next_r][next_c][1] >= cur_dist + 1 and desc[next_r][next_c]!= obstacle_code:
                     if spt[next_r][next_c][1] > cur_dist + 1:  
                         spt[next_r][next_c][1] = cur_dist + 1
                         q.put([(next_r, next_c), cur_dist + 1])
@@ -70,7 +70,7 @@ def expert_navigation_policy_set(desc, loc):
                                      
             elif action == 'N':
                 (next_r, next_c) = (max(row - 1, 0), col)
-                if spt[next_r][next_c][1] >= cur_dist + 1 and desc[next_r][next_c]!= 3:
+                if spt[next_r][next_c][1] >= cur_dist + 1 and desc[next_r][next_c]!= obstacle_code:
                     if spt[next_r][next_c][1] > cur_dist + 1:   
                         spt[next_r][next_c][1] = cur_dist + 1
                         q.put([(next_r, next_c), cur_dist + 1])
@@ -79,7 +79,7 @@ def expert_navigation_policy_set(desc, loc):
             elif action == 'E':
                 (next_r, next_c) = (row, min(col + 1, max_col))
                 
-                if spt[next_r][next_c][1] >= cur_dist + 1 and desc[next_r][next_c]!= 3:
+                if spt[next_r][next_c][1] >= cur_dist + 1 and desc[next_r][next_c]!= obstacle_code:
                     if spt[next_r][next_c][1] > cur_dist + 1:   
                         spt[next_r][next_c][1] = cur_dist + 1
                         q.put([(next_r, next_c), cur_dist + 1])
@@ -88,7 +88,7 @@ def expert_navigation_policy_set(desc, loc):
             elif action == 'W':
                 (next_r, next_c) = (row, max(col - 1, 0))
                 
-                if spt[next_r][next_c][1] >= cur_dist + 1 and desc[next_r][next_c]!= 3:
+                if spt[next_r][next_c][1] >= cur_dist + 1 and desc[next_r][next_c]!= obstacle_code:
                     if spt[next_r][next_c][1] > cur_dist + 1:
                         spt[next_r][next_c][1] = cur_dist + 1
                         q.put([(next_r, next_c), cur_dist + 1])
