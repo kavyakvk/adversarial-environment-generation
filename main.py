@@ -35,7 +35,7 @@ ENV_PARAMS['rgb_coding'] = rgb_coding
 print(ENV_PARAMS)
 
 ga = GeneticAlgorithm(population_size=100, env_params=ENV_PARAMS)
-test_agents = [agent.SwarmAgent(i, ENV_PARAMS) for i in range(5)]
+test_agents = [agent.RandomAgent(i, ENV_PARAMS) for i in range(5)]
 grids, fitness_values = ga.run(rate_elitism=0.1, rate_mutation=0.1, iterations=100, agents=test_agents, verbose=True) 
 print('grids:', grids)
 print('fitness values:', fitness_values)
@@ -44,5 +44,5 @@ pickle_dict = {
     'fitness values': fitness_values,
     'env_params': ENV_PARAMS
 }
-with open('Pickled/GA_output') as f:
+with open('Pickled/GA_random_100_iterations') as f:
     pickle.dump(pickle_dict, f)

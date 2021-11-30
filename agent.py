@@ -12,6 +12,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
 
+import numpy as np
+import random
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Agent():
@@ -40,7 +43,12 @@ class Agent():
         return ''+ str(self.location) + ' ' + str(self.active) + ' ' + str(self.food)
 
 class RandomAgent(Agent):
-    def get_action(self, observation, valid_movements):
+    def __init__(self, id, env_params, spt=None):
+        super().__init__(id, env_params, spt)
+        self.orientation = None
+        self.obs_rad = self.env_params['observation_radius']
+        self.obs_window = self.env_params['observation_radius']*2+1
+    def get_action(self, observation, valid_movements, fwd_only = 1):
         return random.choice(valid_movements), random.random()
     
     
@@ -316,7 +324,7 @@ class DQNAgent(Agent):
 
 
     def get_action(self, observation, valid_movements):
-        
+        return 1
 
 
         
