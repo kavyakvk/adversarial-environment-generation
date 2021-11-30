@@ -73,6 +73,9 @@ class SwarmAgent(Agent):
             # choose direction with BFS
             lay_pheromone = self.env_params['pheromone']['step_if_food']
             good_actions = self.spt[self.location[0]][self.location[1]]
+            if len(good_actions) < 1:
+                print('location', self.location)
+                print('observation', observation)
             next_movement = good_actions[np.random.randint(len(good_actions))]
         
         else:

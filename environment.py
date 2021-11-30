@@ -136,11 +136,11 @@ class Environment:
         upper_left_loc = (location[0] - self.observation_radius, location[1] - self.observation_radius)
         for i in range(self.observation_radius * 2 + 1):
             for j in range(self.observation_radius * 2 + 1):
-                temp_loc = (upper_left_loc[0] + i, upper_left_loc[0] + j)
+                temp_loc = (upper_left_loc[0] + i, upper_left_loc[1] + j)
                 if temp_loc[0] < 0 or temp_loc[1] < 0 or temp_loc[0] >= self.rows or temp_loc[1] >= self.cols:      # if out of bounds
-                    observation_agent[i][j] = 0
+                    # observation_agent[i][j] = 0
                     observation_grid[i][j] = self.env_params['coding_dict']['bounds']
-                    observation_dynamic[i][j] = 0
+                    # observation_dynamic[i][j] = 0
                 else:
                     observation_agent[i][j] = self.agent_grid[temp_loc[0]][temp_loc[1]]
                     observation_grid[i][j] = self.static_grid[temp_loc[0]][temp_loc[1]]
