@@ -275,8 +275,9 @@ class DQNAgent(Agent):
             last_screen = get_screen()
             current_screen = get_screen()
             state = current_screen - last_screen
-            for t in count():
-                # Select and perform an action
+            for step in range(env_params['steps']):
+                # Select and perform an action for each agent
+                for agent_idx in range(agents):
                 action = select_action(state)
                 _, reward, done, _ = env.step(action.item())
                 reward = torch.tensor([reward], device=device)

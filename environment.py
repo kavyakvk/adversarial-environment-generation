@@ -72,7 +72,7 @@ class Environment:
                 self.dynamic_grid[i, j] *= (1 - self.evaporation_rate)
 
         # Update for each active agent
-        for agent_idx in agents:
+        for agent_idx in range(len(agents)):
             agent = agents[agent_idx]
             if agent.active == 1:
                 if ((actions is not None) and (actions[agent_idx] is not None)):
