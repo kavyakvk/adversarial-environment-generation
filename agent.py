@@ -12,6 +12,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
 
+import numpy as np
+import random
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Agent():
@@ -320,7 +323,7 @@ class DQNAgent(Agent):
 
 
     def get_action(self, observation, valid_movements):
-        
+        return 1
 
 
         
