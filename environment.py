@@ -22,6 +22,9 @@ class Environment:
 
         if grid is not None:        # if there is a grid passed through
             self.static_grid = copy.deepcopy(grid)
+            assert(self.static_grid[0][0] == self.env_params['coding_dict']['hive'])
+            assert(self.static_grid[1][0] == self.env_params['coding_dict']['hive'])
+            assert(self.static_grid[0][1] == self.env_params['coding_dict']['hive'])
         else:                       # for testing (if a grid isn't provided)
             self.static_grid = np.zeros((self.rows, self.cols), dtype=float)
             self.static_grid[0][0] = env_params['coding_dict']['hive']
@@ -150,6 +153,8 @@ class Environment:
         else:
             self.static_grid = np.zeros((self.rows, self.cols), dtype=float)
             self.static_grid[0][0] = self.env_params['coding_dict']['hive']
+            self.static_grid[1][0] = self.env_params['coding_dict']['hive']
+            self.static_grid[0][1] = self.env_params['coding_dict']['hive']
             self.static_grid[self.rows-1][self.cols-1] = 9              # Place food in the corner
         
         
@@ -171,7 +176,7 @@ class Environment:
         for i in range(min(self.spawn_rate, len(self.spawn_queue))):
             new_agent = agents[self.spawn_queue.pop(0)]
             new_agent.active = 1
-            new_agent.location = (1,0)      # spawn agents next to hive
+            new_agent.location = random.choice([(1,0),(0,1)])     # spawn agents next to hive or below hive
             self.agent_grid[1][0] = 1
             self.agent_nums[1][0] += 1
             # print(agents[0])

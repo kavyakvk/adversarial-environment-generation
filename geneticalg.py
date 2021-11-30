@@ -58,11 +58,14 @@ class GeneticAlgorithm:
         grid = np.insert(grid, np.random.choice(len(grid), size=num_blockades), np.ones(num_blockades))
         grid = grid*self.env_params['coding_dict']['blockade']
 
+        # place hive at (0,0), (1,0), and (0,1)
         grid[0] = self.env_params['coding_dict']['hive']
+        grid[1] = self.env_params['coding_dict']['hive']
+        grid[self.M+1] = self.env_params['coding_dict']['hive']
 
         # place food across the grid
         food_left = self.env_params['grid']['food']
-        potential_food_idxs = list(np.where(grid == 0)[0])
+        potential_food_idxs = list(np.where(grid == self.env_params['coding_dict']['empty'])[0])
         random.shuffle(potential_food_idxs)
         while food_left > 0:
             food = random.randint(1, min(food_left, self.env_params['max_food']))
@@ -196,6 +199,13 @@ class GeneticAlgorithm:
         self.population_size = population_size
         self.env_params = env_params
         self.population = [self.generate_random_grid() for i in range(self.population_size)]
+
+        for i in range(self.population_size):
+            grid = self.population[i]
+            # check feasibility of solution
+            while not self.check_feasibility(grid):
+                self.population[i] = self.generate_random_grid()
+                grid = self.population[i]
     
     def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False):
         tdqm_disable = not verbose
