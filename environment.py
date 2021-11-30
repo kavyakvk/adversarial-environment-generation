@@ -21,7 +21,7 @@ class Environment:
         self.dynamic_grid = np.zeros((self.rows, self.cols), dtype=float)  # pheromone values for every location in grid
 
         if grid is not None:        # if there is a grid passed through
-            self.static_grid = grid
+            self.static_grid = copy.deepcopy(grid)
         else:                       # for testing (if a grid isn't provided)
             self.static_grid = np.zeros((self.rows, self.cols), dtype=float)
             self.static_grid[0][0] = env_params['coding_dict']['hive']
@@ -146,7 +146,7 @@ class Environment:
         self.dynamic_grid = np.zeros((self.rows, self.cols), dtype=float)  # pheromone values for every location in grid
 
         if grid is not None:        # if there is a grid passed through
-            self.static_grid = grid
+            self.static_grid = copy.deepcopy(grid)
         else:
             self.static_grid = np.zeros((self.rows, self.cols), dtype=float)
             self.static_grid[0][0] = self.env_params['coding_dict']['hive']
