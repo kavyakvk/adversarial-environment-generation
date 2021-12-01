@@ -73,6 +73,7 @@ class Environment:
     def step(self, agents, actions=None):
         self.time_step += 1
         step_rewards = [0 for agent in range(len(agents))]
+        collected_food = 0
         
         # Pheromone evaporation
         for i in range(self.rows):
@@ -89,7 +90,7 @@ class Environment:
                 else:
                     movement, pheromone = agent.get_action(agent_observation, self.get_valid_movements(agent))
                 
-                # reward if agent can see food
+                # REWARD if agent can see food
                 if np.any(np.isin(np.arange(self.env_params['coding_dict']['food_start'], 
                                             self.env_params['coding_dict']['food_start']+self.env_params['max_food']),
                                     agent_observation[1])):
@@ -116,7 +117,7 @@ class Environment:
                     else:
                         self.static_grid[new_location[0]][new_location[1]] -= 1    # decrement food by 1
                     agent.bfs_active = 1        # activate bfs
-                    # reward for agent picking up food
+                    # REWARD for agent picking up food
                     step_rewards[agent_idx] += 5
                 # If agent is now at hive
                 if self.static_grid[new_location[0]][new_location[1]] == self.env_params['coding_dict']['hive']:
@@ -124,10 +125,11 @@ class Environment:
                     self.spawn_queue.append(agent.id)
                     self.total_food += agent.food
                     if agent.food == 1:
-                        # reward for agent returning food
+                        # REWARD for agent returning food
                         step_rewards[agent_idx] += 2
+                        collected_food += 1
                     agent.food = 0
-        return step_rewards
+        return step_rewards, collected_food
     
     def get_empty_observation(self):
         observation_agent = np.zeros((2*self.observation_radius + 1, 2*self.observation_radius + 1), dtype=float)

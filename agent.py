@@ -176,7 +176,6 @@ class DQNAgent(Agent):
         
         if net_filepath is not None:
             self.policy_net.load_state_dict(torch.load(net_filepath))
-            self.target_net.load_state_dict(torch.load(net_filepath))
 
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
@@ -204,7 +203,7 @@ class DQNAgent(Agent):
             eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
                 math.exp(-1. * self.steps_done / self.EPS_DECAY)
             self.steps_done += 1
-            if sample > eps_threshold:
+            if (sample > eps_threshold and train) or (not train):
                 with torch.no_grad():
                     # t.max(1) will return largest column value of each row.
                     # second column on max result is index of where max element was

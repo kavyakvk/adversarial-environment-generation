@@ -26,6 +26,8 @@ ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'b
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+print(DEVICE)
+
 Transition = namedtuple('Transition',
                                 ('state', 'action', 'next_state', 'reward'))
 
@@ -47,10 +49,11 @@ class ReplayMemory(object):
 def train(agents, env_params, filename, num_episodes=50):
     episode_loss = [0]
     episode_rewards = [[0 for agent in agents]]
+    episode_food = [0]
 
     shared_memory = ReplayMemory(10000) 
 
-    train_agent = agents[0]
+    train_agent = agents[1]
 
     for episode in range(num_episodes):
         grid = utils.generate_n_valid_feasible_grids(1, env_params)[0]
@@ -87,9 +90,10 @@ def train(agents, env_params, filename, num_episodes=50):
                 environment_actions.append((env_params['env_actions'][movement.item()], pheromone))
             movement_actions_tensor = torch.tensor(movement_actions, device=DEVICE)
 
-            rewards = env.step(agents, environment_actions)
+            rewards, collected_food = env.step(agents, environment_actions)
             rewards_tensor = torch.tensor(rewards, device=DEVICE)
             episode_rewards[episode] = [episode_rewards[episode][k]+rewards[k] for k in range(len(agents))]
+            episode_food[episode] += collected_food
 
             # Get new observation for each agent
             next_observations = [utils.prepare_observation(obs, env_params, (agent.screen_height, agent.screen_width)) for obs in env.update_observation(agents)]
@@ -108,9 +112,10 @@ def train(agents, env_params, filename, num_episodes=50):
             if loss is not None:
                     episode_loss[episode] += loss/env_params['steps']
                 
-        print(episode_loss[-1])
+        print(episode_loss[-1], episode_rewards[-1], episode_food[-1])
         episode_loss.append(0)
         episode_rewards.append([0 for agent in agents])
+        episode_food.append(0)
         
         for agent in agents:
             # Update the target network, copying all weights and biases in DQN
@@ -123,11 +128,11 @@ def train(agents, env_params, filename, num_episodes=50):
 
 def dqn_main():
     agents = [agent.DQNAgent(i, ENV_PARAMS) for i in range(5)]
-    episode_loss, episode_rewards = train(agents, ENV_PARAMS, filename="DQN/target_net.pt", num_episodes=50)
+    episode_loss, episode_rewards = train(agents, ENV_PARAMS, filename=cwd+"DQN/target_net.pt", num_episodes=100)
 
-    with open('Pickled/DQN_training_rewards.pkl', 'wb') as f:
+    with open(cwd+'DQN/DQN_training_rewards.pkl', 'wb') as f:
         pickle.dump(episode_rewards, f)
-    with open('Pickled/DQN_training_loss.pkl', 'wb') as f:
+    with open(cwd+'DQN/DQN_training_loss.pkl', 'wb') as f:
         pickle.dump(episode_loss, f)
 
 
