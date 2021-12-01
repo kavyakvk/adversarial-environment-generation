@@ -121,6 +121,7 @@ class SwarmAgent(Agent):
 
         return next_movement, lay_pheromone
 
+# DQN based on tutorial from: https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 class DQN(nn.Module):
 
     def __init__(self, h, w, outputs):
