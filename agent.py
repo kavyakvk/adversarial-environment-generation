@@ -14,6 +14,7 @@ import torchvision.transforms as T
 
 import numpy as np
 import random
+import math
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -159,7 +160,7 @@ class DQN(nn.Module):
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-        x = x.to(device)
+        x = x.to(DEVICE)
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
@@ -204,12 +205,19 @@ class DQNAgent(Agent):
                 # t.max(1) will return largest column value of each row.
                 # second column on max result is index of where max element was
                 # found, so we pick action with the larger expected reward.
-                opt_action_id = self.policy_net(observation).max(1)[1].view(1, 1)
-                opt_action = self.environment_actions[int(opt_action_id)]
+                sorted_tensor, opt_action_ids = torch.sort(self.policy_net(observation)[0], descending=True)
+                valid_movement_ids = [self.environment_actions.index(action) for action in valid_movements]
+                opt_action_id = None
+                for i in range(self.n_actions):
+                    action = opt_action_ids[i].item()
+                    if action in valid_movement_ids:
+                        opt_action_id = opt_action_ids[i]
+                        break
+                #print(list(opt_action_ids), valid_movement_ids, opt_action_id)
                 if train:
-                    return opt_action_id
+                    return opt_action_id.view(1,1)
                 else:
-                    return opt_action
+                    return self.environment_actions[int(opt_action_id)]
 
         else:
             if train:
@@ -217,7 +225,7 @@ class DQNAgent(Agent):
             else:
                 return random.choice(valid_movements)
 
-    def optimize_model():
+    def optimize_model(self):
         if len(self.memory) < self.BATCH_SIZE:
             return
         
@@ -247,7 +255,7 @@ class DQNAgent(Agent):
         # on the "older" target_net; selecting their best reward with max(1)[0].
         # This is merged based on the mask, such that we'll have either the expected
         # state value or 0 in case the state was final.
-        next_state_values = torch.zeros(self.BATCH_SIZE, device=device)
+        next_state_values = torch.zeros(self.BATCH_SIZE, device=DEVICE)
         next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * self.GAMMA) + reward_batch
@@ -262,6 +270,8 @@ class DQNAgent(Agent):
         for param in self.policy_net.parameters():
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
+
+        return loss.item()
 
 
         

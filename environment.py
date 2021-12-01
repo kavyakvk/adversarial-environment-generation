@@ -113,7 +113,7 @@ class Environment:
                     else:
                         self.static_grid[new_location[0]][new_location[1]] -= 1    # decrement food by 1
                     agent.bfs_active = 1        # activate bfs
-                    # agent reward for picking up food
+                    # reward for agent picking up food
                     step_rewards[agent_idx] += 5
                 # If agent is now at hive
                 if self.static_grid[new_location[0]][new_location[1]] == self.env_params['coding_dict']['hive']:

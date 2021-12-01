@@ -88,8 +88,8 @@ def generate_random_grid(env_params):
 
 def process_grids(observation, env_params, visual=True):
     agent_grid, static_grid, dynamic_grid = observation
-    N = env_params['N']
-    M = env_params['M']
+    N = static_grid.shape[0]
+    M = static_grid.shape[1]
     if visual:
         agent_static_grid_processed, dynamic_grid_processed = np.zeros((N, M, 3)), np.zeros((N, M, 3))
     else:
@@ -123,11 +123,11 @@ def process_grids(observation, env_params, visual=True):
 
 def prepare_observation(observation, env_params, resize_shape=None, training=True):
     resize = T.Compose([T.ToPILImage(),
-                    T.Resize(resize_shape, interpolation=Image.CUBIC),
+                    T.Resize(resize_shape), #interpolation=T.InterpolationMode.CUBIC),
                     T.ToTensor()])
     
     # Add color channels
-    agent_static_grid, dynamic_grid = process_grids(observation, env_params, visual=False)
+    agent_static_grid, dynamic_grid = process_grids(observation, env_params, visual=True)
     appended_grid = np.append(agent_static_grid, dynamic_grid, axis=0)
     # Change H,W,C --> C,H,W
     appended_grid = appended_grid.transpose((2, 0, 1))

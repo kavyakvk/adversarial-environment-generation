@@ -6,6 +6,7 @@ import copy
 import pickle
 import torch
 import numpy as np
+from tqdm import tqdm
 
 ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
                             'N': 10, 'M': 10, 'max_food': 5, 'observation_radius': 1, 'steps': 300, 'spawn_rate': 2, 
@@ -21,6 +22,8 @@ ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'b
                             11: (0, 225, 75), 12: (0, 220, 80), 
                             13: (0, 215, 85), 14: (0, 210, 90)}}
 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 def train(grid, agents, env_params, num_episodes=50):
     env = environment.Environment(env_params, grid)
 
@@ -31,8 +34,10 @@ def train(grid, agents, env_params, num_episodes=50):
         env.initialize_spawn_queue(agents)
         #old_observations = [prepare_observation(env.get_empty_observation()) for agent in agents]
         observations = None
+
+        episode_loss = [[0 for agent in agents]]
         
-        for step in range(env_params['steps']):
+        for step in tqdm(range(env_params['steps'])):
             # Spawn agents if necessary
             env.spawn_agents(agents)
 
@@ -49,6 +54,7 @@ def train(grid, agents, env_params, num_episodes=50):
                 state = observations[agent_idx]#-old_observations[agent_idx]
                 action = agent.get_action(state, env.get_valid_movements(agent), train=True)
                 actions.append(action)
+            #print("actions", torch.tensor(actions, device=DEVICE))
             actions_tensor = torch.tensor(actions, device=DEVICE)
             
             # Step actions in the environment
@@ -57,31 +63,37 @@ def train(grid, agents, env_params, num_episodes=50):
                 if agents[agent_idx].food:
                     environment_actions.append((env.environment_actions[action], env_params['pheromone']['step']))
                 else:
-                    environment_actions.append((env.environment_actions[action], env_params['pheromone']['step']))
-            rewards = env.step(agents, actions)
+                    environment_actions.append((env.environment_actions[action], env_params['pheromone']['step_if_food']))
+            rewards = env.step(agents, environment_actions)
             rewards_tensor = torch.tensor(rewards, device=DEVICE)
+            #print("rewards", torch.tensor(rewards, device=DEVICE))
 
             # Get new observation for each agent
-            next_observations = [prepare_observation(obs, env_params, (agent.screen_height, agent.screen_width)) for obs in env.update_observation(agents)]
+            next_observations = [utils.prepare_observation(obs, env_params, (agent.screen_height, agent.screen_width)) for obs in env.update_observation(agents)]
 
             # Store the transitions in memory
             for agent_idx in range(len(agents)):
-                agent = agents[agent_idx]
                 state = observations[agent_idx]#-old_observations[agent_idx]
                 next_state = next_observations[agent_idx]#-observations[agent_idx]
-                agent.memory.push(state, actions_tensor[agent_idx], next_state, rewards_tensor[agent_idx])
+                agent.memory.push(state, actions_tensor[agent_idx].view(1,1), next_state, rewards_tensor[agent_idx].view(1))
 
             # Save observations
             #old_observations = observations
 
             # Perform one step of the optimization (on the policy network) for all agents
-            for agent in agents:
-                agent.optimize_model()
-
+            for agent_id in range(len(agents)):
+                agent = agents[agent_id]
+                loss = agent.optimize_model()
+                if loss is not None:
+                    episode_loss[episode][agent_id] += loss/env_params['steps']
+        
+        print(episode_loss)
+        
         for agent in agents:
             # Update the target network, copying all weights and biases in DQN
             if episode % TARGET_UPDATE == 0:
                 agent.target_net.load_state_dict(agent.policy_net.state_dict())
+        episode_loss.append([0 for agent in agents])
 
 def dqn_main():
     agents = [agent.DQNAgent(i, ENV_PARAMS) for i in range(5)]
