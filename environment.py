@@ -93,7 +93,7 @@ class Environment:
                 if np.any(np.isin(np.arange(self.env_params['coding_dict']['food_start'], 
                                             self.env_params['coding_dict']['food_start']+self.env_params['max_food']),
                                     agent_observation[1])):
-                    step_rewards[agent_idx] += 0.25
+                    step_rewards[agent_idx] += 0.1
 
                 location, food = agent.get_state()
                 new_location = (location[0] + movement[0], location[1] + movement[1])
@@ -123,6 +123,9 @@ class Environment:
                     agent.active = 0
                     self.spawn_queue.append(agent.id)
                     self.total_food += agent.food
+                    if agent.food == 1:
+                        # reward for agent returning food
+                        step_rewards[agent_idx] += 2
                     agent.food = 0
         return step_rewards
     

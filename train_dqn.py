@@ -16,13 +16,13 @@ ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'b
                             'grid': {'food': 40, 'blockade': 20}, 
                             'env_actions': [(0,0),(0,-1), (0,1), (1,0), (-1,0)],
                             'rgb_coding': {0: [0, 0, 0], 
-                            1: [150, 0, 150], 2: [100, 100, 100], 
-                            3: [150, 150, 0], 4: [45, 0, 255], 
-                            5: [0, 255, 45], 6: (0, 250, 50), 
-                            7: (0, 245, 55), 8: (0, 240, 60), 
-                            9: (0, 235, 65), 10: (0, 230, 70), 
-                            11: (0, 225, 75), 12: (0, 220, 80), 
-                            13: (0, 215, 85), 14: (0, 210, 90)}}
+                                            1: [150, 0, 150], 2: [100, 100, 100], 
+                                            3: [150, 150, 0], 4: [45, 0, 255], 
+                                            5: [0, 255, 45], 6: (0, 250, 50), 
+                                            7: (0, 245, 55), 8: (0, 240, 60), 
+                                            9: (0, 235, 65), 10: (0, 230, 70), 
+                                            11: (0, 225, 75), 12: (0, 220, 80), 
+                                            13: (0, 215, 85), 14: (0, 210, 90)}}
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -44,14 +44,16 @@ class ReplayMemory(object):
     def __len__(self):
         return len(self.memory)
 
-def train(grid, agents, env_params, num_episodes=50):
+def train(agents, env_params, filename, num_episodes=50):
     episode_loss = [0]
+    episode_rewards = [[0 for agent in agents]]
 
     shared_memory = ReplayMemory(10000) 
 
     train_agent = agents[0]
 
     for episode in range(num_episodes):
+        grid = utils.generate_n_valid_feasible_grids(1, env_params)[0]
         env = environment.Environment(env_params, grid)
 
         for agent in agents:
@@ -87,6 +89,7 @@ def train(grid, agents, env_params, num_episodes=50):
 
             rewards = env.step(agents, environment_actions)
             rewards_tensor = torch.tensor(rewards, device=DEVICE)
+            episode_rewards[episode] = [episode_rewards[episode][k]+rewards[k] for k in range(len(agents))]
 
             # Get new observation for each agent
             next_observations = [utils.prepare_observation(obs, env_params, (agent.screen_height, agent.screen_width)) for obs in env.update_observation(agents)]
@@ -107,16 +110,25 @@ def train(grid, agents, env_params, num_episodes=50):
                 
         print(episode_loss[-1])
         episode_loss.append(0)
+        episode_rewards.append([0 for agent in agents])
         
         for agent in agents:
             # Update the target network, copying all weights and biases in DQN
             if episode % agent.TARGET_UPDATE == 0:
                 agent.target_net.load_state_dict(train_agent.policy_net.state_dict())
+        
+        torch.save(train_agent.target_net.state_dict(), filename)
+        
+    return episode_loss, episode_rewards 
 
 def dqn_main():
     agents = [agent.DQNAgent(i, ENV_PARAMS) for i in range(5)]
-    grid = utils.generate_random_grid(ENV_PARAMS)
-    train(grid, agents, ENV_PARAMS, num_episodes=50)
+    episode_loss, episode_rewards = train(agents, ENV_PARAMS, filename="DQN/target_net.pt", num_episodes=50)
+
+    with open('Pickled/DQN_training_rewards.pkl', 'wb') as f:
+        pickle.dump(episode_rewards, f)
+    with open('Pickled/DQN_training_loss.pkl', 'wb') as f:
+        pickle.dump(episode_loss, f)
 
 
 dqn_main()

@@ -196,3 +196,23 @@ def expert_navigation_policy_set(desc, loc, env_params):
                     spt[next_r][next_c][0].append((0,1))
 
     return spt
+
+def check_feasibility(grid, env_params):
+        spt = [[q[0] for q in r] for r in expert_navigation_policy_set(grid, (0,0), env_params)]
+        for x in range(env_params['N']):
+            for y in range(env_params['M']):
+                if len(spt[x][y]) == 0 and grid[x][y] >= env_params['coding_dict']['food_start']:
+                    return False
+        return True
+
+def generate_n_valid_feasible_grids(n, env_params):
+
+        population = [generate_random_grid(env_params) for i in range(n)]
+
+        for i in range(len(population)):
+            grid = population[i]
+            # check feasibility of solution
+            while not check_feasibility(grid, env_params):
+                population[i] = generate_random_grid(env_params)
+                grid = population[i]
+        return population

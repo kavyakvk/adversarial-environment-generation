@@ -121,6 +121,7 @@ class SwarmAgent(Agent):
 
         return next_movement, lay_pheromone
 
+# DQN based on tutorial from: https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 class DQN(nn.Module):
 
     def __init__(self, h, w, outputs):
@@ -154,7 +155,7 @@ Transition = namedtuple('Transition',
                                 ('state', 'action', 'next_state', 'reward'))
 
 class DQNAgent(Agent):
-    def __init__(self, id, env_params, spt=None):
+    def __init__(self, id, env_params, net_filepath=None, spt=None):
         super().__init__(id, env_params, spt)
 
         obs_window = self.env_params['observation_radius']*2+1
@@ -172,6 +173,11 @@ class DQNAgent(Agent):
         self.n_actions = len(self.environment_actions)
         self.policy_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(DEVICE)
         self.target_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(DEVICE)
+        
+        if net_filepath is not None:
+            self.policy_net.load_state_dict(torch.load(net_filepath))
+            self.target_net.load_state_dict(torch.load(net_filepath))
+
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
 
