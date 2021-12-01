@@ -44,7 +44,7 @@ class ReplayMemory(object):
     def __len__(self):
         return len(self.memory)
 
-def train(grid, agents, env_params, filename, num_episodes=50):
+def train(agents, env_params, filename, num_episodes=50):
     episode_loss = [0]
     episode_rewards = [[0 for agent in agents]]
 
@@ -53,6 +53,7 @@ def train(grid, agents, env_params, filename, num_episodes=50):
     train_agent = agents[0]
 
     for episode in range(num_episodes):
+        grid = utils.generate_n_valid_feasible_grids(1, env_params)[0]
         env = environment.Environment(env_params, grid)
 
         for agent in agents:
@@ -122,8 +123,7 @@ def train(grid, agents, env_params, filename, num_episodes=50):
 
 def dqn_main():
     agents = [agent.DQNAgent(i, ENV_PARAMS) for i in range(5)]
-    grid = utils.generate_random_grid(ENV_PARAMS)
-    episode_loss, episode_rewards = train(grid, agents, ENV_PARAMS, filename="DQN/target_net.pt", num_episodes=50)
+    episode_loss, episode_rewards = train(agents, ENV_PARAMS, filename="DQN/target_net.pt", num_episodes=50)
 
     with open('Pickled/DQN_training_rewards.pkl', 'wb') as f:
         pickle.dump(episode_rewards, f)
