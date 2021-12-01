@@ -158,12 +158,6 @@ class GeneticAlgorithm:
                 crossover_idxs = random.sample(range(0, self.population_size), 2)
                 crossed = self.get_crossover(self.population[crossover_idxs[0]], 
                                              self.population[crossover_idxs[1]])
-                # NOT DONE FROM LUCY
-#                 # check feasibility of solution
-#                 while not self.check_feasibility(crossed):
-#                     crossover_idxs = random.sample(range(0, self.population_size), 2)
-#                     crossed = self.get_crossover(self.population[crossover_idxs[0]], 
-#                                              self.population[crossover_idxs[1]])
                 new_population.extend(crossed)
             
             # mutation
@@ -178,13 +172,21 @@ class GeneticAlgorithm:
                 else:
                     j-=1 
 
-            for grid in new_population:
+            feasible_new_population = []
+            for j in range(len(new_population)):
+                grid = new_population[j]
                 # Non-mutated may need fixing
                 if not utils.check_valid(grid, self.env_params, throw_error=False):
                     grid = self.fix_blockade(self.fix_food(grid))
+                # Non-mutated need a feasibility check
+                if self.check_feasibility(grid):
+                    feasible_new_population.append(grid)
             
+            num_missing = len(new_population)-len(feasible_new_population)
+            feasible_new_population.extend(random.choice(grids[-1], size=num_missing))
+                    
             #update population
-            selected_population.extend(new_population)
+            selected_population.extend(feasible_new_population)
             self.population = selected_population
             assert(len(self.population) == self.population_size)
         return grids, fitness_values
