@@ -123,17 +123,22 @@ class GeneticAlgorithm:
                     return False
         return True
 
+    def generate_n_valid_feasible_grids(self, n):
+
+        population = [utils.generate_random_grid(self.env_params) for i in range(n)]
+
+        for i in range(len(population)):
+            grid = population[i]
+            # check feasibility of solution
+            while not self.check_feasibility(grid):
+                population[i] = utils.generate_random_grid(self.env_params)
+                grid = population[i]
+        return population
+
     def __init__(self, population_size, env_params):
         self.population_size = population_size
         self.env_params = env_params
-        self.population = [utils.generate_random_grid(self.env_params) for i in range(self.population_size)]
-
-        for i in range(self.population_size):
-            grid = self.population[i]
-            # check feasibility of solution
-            while not self.check_feasibility(grid):
-                self.population[i] = utils.generate_random_grid(self.env_params)
-                grid = self.population[i]
+        self.population = self.generate_n_valid_feasible_grids(self.population_size)
     
     def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False, tdqm_disable=True):
         grids, fitness_values = [], []
@@ -183,7 +188,7 @@ class GeneticAlgorithm:
                     feasible_new_population.append(grid)
             
             num_missing = len(new_population)-len(feasible_new_population)
-            feasible_new_population.extend(random.choice(grids[-1], size=num_missing))
+            feasible_new_population.extend(self.generate_n_valid_feasible_grids(num_missing))
                     
             #update population
             selected_population.extend(feasible_new_population)
