@@ -208,7 +208,11 @@ class DQNAgent(Agent):
                     # t.max(1) will return largest column value of each row.
                     # second column on max result is index of where max element was
                     # found, so we pick action with the larger expected reward.
-                    sorted_tensor, opt_action_ids = torch.sort(self.policy_net(observation)[0], descending=True)
+                    processed_observation = observation
+                    if not train:
+                        processed_observation = utils.prepare_observation(processed_observation, 
+                                                                            self.env_params, (self.screen_height, self.screen_width))
+                    sorted_tensor, opt_action_ids = torch.sort(self.policy_net(processed_observation)[0], descending=True)
                     valid_movement_ids = [self.environment_actions.index(action) for action in valid_movements]
                     opt_action_id = None
                     for i in range(self.n_actions):
