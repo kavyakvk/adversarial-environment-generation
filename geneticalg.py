@@ -116,7 +116,7 @@ class GeneticAlgorithm:
         return grid
 
     def check_feasibility(self, grid):
-        spt = [[q[0] for q in r] for r in utils.expert_navigation_policy_set(grid, (0,0), self.env_params['coding_dict']['blockade'])]
+        spt = [[q[0] for q in r] for r in utils.expert_navigation_policy_set(grid, (0,0), self.env_params)]
         for x in range(self.env_params['N']):
             for y in range(self.env_params['M']):
                 if len(spt[x][y]) == 0 and grid[x][y] >= self.env_params['coding_dict']['food_start']:
@@ -135,11 +135,10 @@ class GeneticAlgorithm:
                 self.population[i] = utils.generate_random_grid(self.env_params)
                 grid = self.population[i]
     
-    def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False):
-        tdqm_disable = not verbose
+    def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False, tdqm_disable=True):
         grids, fitness_values = [], []
         for i in range(iterations):
-            fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tdqm_disable)]
+            fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tdqm_disable, position=0, leave=True)]
             if verbose:
                 print("ITERATION ", i, sum(fitness)/len(fitness))
             
