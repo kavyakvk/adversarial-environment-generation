@@ -114,7 +114,8 @@ def process_grids(observation, env_params, visual=True):
                     set_channel(i, j, agent_static_grid_processed, env_params['rgb_coding'][static_grid[i,j]])
             # compute greyscale values for dynamic grid
             greyscale_val = 255 * (env_params['pheromone']['cap'] - dynamic_grid[i,j])/env_params['pheromone']['cap']
-            assert(greyscale_val > 0 and greyscale_val <= 255)
+            greyscale_val = max(0, min(255, greyscale_val))
+            assert(greyscale_val >= 0 and greyscale_val <= 255)
             if visual:
                 dynamic_grid_processed[i][j] = [greyscale_val]*3
             else:
