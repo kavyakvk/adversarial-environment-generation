@@ -34,7 +34,7 @@ class Environment:
         '''
             BFS
         '''
-        self.spt = [[q[0] for q in r] for r in utils.expert_navigation_policy_set(self.static_grid, (0,0), env_params['coding_dict']['blockade'])]
+        self.spt = [[q[0] for q in r] for r in utils.expert_navigation_policy_set(desc=self.static_grid, loc=(0,0), env_params=env_params)]
         
         '''
             Params
@@ -60,7 +60,10 @@ class Environment:
         valid_movements = [(0,0)]
         for movement in possible_movements:
             new_location = (pos_x + movement[0], pos_y + movement[1])
-            if new_location[0] < self.rows and new_location[0] >= 0 and new_location[1] < self.cols and new_location[1] >= 0 and self.static_grid[new_location[0]][new_location[1]] not in [self.env_params['coding_dict']['bounds'], self.env_params['coding_dict']['blockade']]:
+            if ((new_location[0] < self.rows and new_location[0] >= 0) and 
+                (new_location[1] < self.cols and new_location[1] >= 0) and 
+                (self.static_grid[new_location[0]][new_location[1]] != self.env_params['coding_dict']['bounds']) and 
+                (self.static_grid[new_location[0]][new_location[1]] != self.env_params['coding_dict']['blockade'])):
                 valid_movements.append(movement)
         if len(valid_movements) == 0:
             print(self.static_grid)
@@ -109,7 +112,7 @@ class Environment:
                 if self.static_grid[new_location[0]][new_location[1]] >= self.env_params['coding_dict']['food_start'] and agent.food == 0:
                     agent.food = 1
                     if self.static_grid[new_location[0]][new_location[1]] == self.env_params['coding_dict']['food_start']:
-                        self.static_grid[new_location[0]][new_location[1]] = 0    # now no more food
+                        self.static_grid[new_location[0]][new_location[1]] = self.env_params['coding_dict']['empty']    # now no more food
                     else:
                         self.static_grid[new_location[0]][new_location[1]] -= 1    # decrement food by 1
                     agent.bfs_active = 1        # activate bfs
@@ -152,7 +155,7 @@ class Environment:
         # observation_dynamic = self.dynamic_grid[location[0]-self.observation_radius : location[0]+self.observation_radius+1][location[1]-self.observation_radius : location[1]+self.observation_radius+1]
         return observation_agent, observation_grid, observation_dynamic
 
-    def reset(self, grid=None):
+    def reset(self, agents, grid=None):
         self.agent_grid = np.zeros((self.rows, self.cols), dtype=float)     # one-hot encoding of agent locations
         self.agent_nums = np.zeros((self.rows, self.cols), dtype=float)
         self.dynamic_grid = np.zeros((self.rows, self.cols), dtype=float)  # pheromone values for every location in grid
@@ -166,7 +169,15 @@ class Environment:
             self.static_grid[0][1] = self.env_params['coding_dict']['hive']
             self.static_grid[self.rows-1][self.cols-1] = 9              # Place food in the corner
         
-        
+        '''
+            Reset Agents
+        '''
+        for agent in agents:
+            agent.food = 0
+            agent.active = 0
+            agent.bfs_active = 0
+            agent.location = (0,0)
+            agent.prev_location = (0,0)
         '''
             Params
         '''
@@ -233,7 +244,7 @@ class Environment:
             self.visualize_map(self.agent_grid)
         
         # Reset environment
-        self.reset(grid)
+        self.reset(agents, grid)
         
         # Return amount of collected food
         if visualize:

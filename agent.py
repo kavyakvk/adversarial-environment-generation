@@ -69,13 +69,10 @@ class SwarmAgent(Agent):
         agent_grid, static_grid, dynamic_grid = observation
         d = dynamic_grid.copy()
         last_action = tuple(np.array(self.location) - np.array(self.prev_location))
-        if self.food and self.location != self.env_params['coding_dict']['hive']:
+        if self.food == 1 and self.location != self.env_params['coding_dict']['hive']:
             # choose direction with BFS
             lay_pheromone = self.env_params['pheromone']['step_if_food']
             good_actions = self.spt[self.location[0]][self.location[1]]
-            if len(good_actions) < 1:
-                print('location', self.location)
-                print('observation', observation)
             next_movement = good_actions[np.random.randint(len(good_actions))]
         
         else:

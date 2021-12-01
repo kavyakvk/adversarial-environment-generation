@@ -142,7 +142,8 @@ def prepare_observation(observation, env_params, resize_shape=None, training=Tru
 # get array of movements to take from each square towards hive
 # avoids obstacles (coded as 4 by default)
 # desc: static grid; loc: use (0,0) to go to hive
-def expert_navigation_policy_set(desc, loc, obstacle_code = 4):
+def expert_navigation_policy_set(desc, loc, env_params):
+    obstacle_code = env_params['coding_dict']['blockade']
     (loc_r, loc_c) = loc
     num_rows = len(desc)
     num_cols = len(desc[0])
