@@ -2,7 +2,7 @@ import abc
 import utils 
 import environment
 
-from collections import namedtuple, deque
+from collections import namedtuple
 from itertools import count
 from PIL import Image
 
@@ -75,7 +75,6 @@ class SwarmAgent(Agent):
             lay_pheromone = self.env_params['pheromone']['step_if_food']
             good_actions = self.spt[self.location[0]][self.location[1]]
             next_movement = good_actions[np.random.randint(len(good_actions))]
-        
         else:
             lay_pheromone = self.env_params['pheromone']['step']
             # move forward, probs weighted by pheromone strength
@@ -121,21 +120,6 @@ class SwarmAgent(Agent):
                 next_movement = valid_movements[np.random.randint(len(valid_movements))]
 
         return next_movement, lay_pheromone
-
-class ReplayMemory(object):
-
-    def __init__(self, capacity):
-        self.memory = deque([],maxlen=capacity)
-
-    def push(self, *args):
-        """Save a transition"""
-        self.memory.append(Transition(*args))
-
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
-
-    def __len__(self):
-        return len(self.memory)
 
 class DQN(nn.Module):
 
@@ -191,45 +175,59 @@ class DQNAgent(Agent):
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
 
-        self.optimizer = optim.RMSprop(self.policy_net.parameters())
-        self.memory = ReplayMemory(10000)    
+        self.optimizer = optim.RMSprop(self.policy_net.parameters())   
         self.steps_done = 0
     
     def get_action(self, observation, valid_movements, train=False):
-        sample = random.random()
-        eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
-            math.exp(-1. * self.steps_done / self.EPS_DECAY)
-        self.steps_done += 1
-        if sample > eps_threshold:
-            with torch.no_grad():
-                # t.max(1) will return largest column value of each row.
-                # second column on max result is index of where max element was
-                # found, so we pick action with the larger expected reward.
-                sorted_tensor, opt_action_ids = torch.sort(self.policy_net(observation)[0], descending=True)
-                valid_movement_ids = [self.environment_actions.index(action) for action in valid_movements]
-                opt_action_id = None
-                for i in range(self.n_actions):
-                    action = opt_action_ids[i].item()
-                    if action in valid_movement_ids:
-                        opt_action_id = opt_action_ids[i]
-                        break
-                #print(list(opt_action_ids), valid_movement_ids, opt_action_id)
-                if train:
-                    return opt_action_id.view(1,1)
-                else:
-                    return self.environment_actions[int(opt_action_id)]
+        assert(len(valid_movements) > 0)
+        if self.food == 1 and self.location != self.env_params['coding_dict']['hive']:
+            # choose direction with BFS
+            lay_pheromone = self.env_params['pheromone']['step_if_food']
+            good_actions = self.spt[self.location[0]][self.location[1]]
+            next_movement = good_actions[np.random.randint(len(good_actions))]
 
-        else:
             if train:
-                return torch.tensor([[random.randrange(self.n_actions)]], device=DEVICE, dtype=torch.long)
+                return torch.tensor([[self.environment_actions.index(next_movement)]], device=DEVICE, dtype=torch.long), lay_pheromone
             else:
-                return random.choice(valid_movements)
+                return next_movement, lay_pheromone
+            
+        elif self.food == 0:
+            lay_pheromone = self.env_params['pheromone']['step']
 
-    def optimize_model(self):
-        if len(self.memory) < self.BATCH_SIZE:
+            sample = random.random()
+            eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
+                math.exp(-1. * self.steps_done / self.EPS_DECAY)
+            self.steps_done += 1
+            if sample > eps_threshold:
+                with torch.no_grad():
+                    # t.max(1) will return largest column value of each row.
+                    # second column on max result is index of where max element was
+                    # found, so we pick action with the larger expected reward.
+                    sorted_tensor, opt_action_ids = torch.sort(self.policy_net(observation)[0], descending=True)
+                    valid_movement_ids = [self.environment_actions.index(action) for action in valid_movements]
+                    opt_action_id = None
+                    for i in range(self.n_actions):
+                        action = opt_action_ids[i].item()
+                        if action in valid_movement_ids:
+                            opt_action_id = opt_action_ids[i]
+                            break
+                    #print(list(opt_action_ids), valid_movement_ids, opt_action_id)
+                    if train:
+                        return opt_action_id.view(1,1), lay_pheromone
+                    else:
+                        return self.environment_actions[int(opt_action_id)], lay_pheromone
+            else:
+                if train:
+                    return torch.tensor([[self.environment_actions.index(random.choice(valid_movements))]], device=DEVICE, dtype=torch.long), lay_pheromone
+                else:
+                    return random.choice(valid_movements), lay_pheromone
+
+
+    def optimize_model(self, shared_memory):
+        if len(shared_memory) < self.BATCH_SIZE:
             return
         
-        transitions = self.memory.sample(self.BATCH_SIZE)
+        transitions = shared_memory.sample(self.BATCH_SIZE)
         # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
         # detailed explanation). This converts batch-array of Transitions
         # to Transition of batch-arrays.

@@ -5,13 +5,8 @@ import pickle
 
 # ant black, obstacle blue, hive yellow/brown, food green, empty 
 
-<<<<<<< HEAD
-ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
-                            'N': 20, 'M': 20, 'max_food': 5, 'observation_radius': 3, 'steps': 300, 'spawn_rate': 2, 
-=======
 ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 6}, 
                             'N': 10, 'M': 10, 'max_food': 5, 'observation_radius': 1, 'steps': 300, 'spawn_rate': 2, 
->>>>>>> 5dc68310ab68e13b85b1db0ed40caf3a18187808
                             'pheromone': {'evaporation': 0.05, 'diffusion': 0.1, 'step': 0.1, 'step_if_food': 0.3, 'cap': 5}, 
                             'grid': {'food': 40, 'blockade': 20}, 
                             'env_actions': [(0,0),(0,-1), (0,1), (1,0), (-1,0)],

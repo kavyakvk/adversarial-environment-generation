@@ -7,6 +7,8 @@ import pickle
 import torch
 import numpy as np
 from tqdm import tqdm
+import random
+from collections import namedtuple, deque
 
 ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
                             'N': 10, 'M': 10, 'max_food': 5, 'observation_radius': 1, 'steps': 300, 'spawn_rate': 2, 
@@ -24,18 +26,43 @@ ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'b
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+Transition = namedtuple('Transition',
+                                ('state', 'action', 'next_state', 'reward'))
+
+class ReplayMemory(object):
+
+    def __init__(self, capacity):
+        self.memory = deque([],maxlen=capacity)
+
+    def push(self, *args):
+        """Save a transition"""
+        self.memory.append(Transition(*args))
+
+    def sample(self, batch_size):
+        return random.sample(self.memory, batch_size)
+
+    def __len__(self):
+        return len(self.memory)
+
 def train(grid, agents, env_params, num_episodes=50):
-    env = environment.Environment(env_params, grid)
+    episode_loss = [0]
+
+    shared_memory = ReplayMemory(10000) 
+
+    train_agent = agents[0]
 
     for episode in range(num_episodes):
+        env = environment.Environment(env_params, grid)
+
+        for agent in agents:
+            agent.set_spt(env.spt)
+        
         print("Episode", episode)
         # Initialize the environment and spawn queue
-        env.reset(grid)
+        env.reset(agents, grid)
         env.initialize_spawn_queue(agents)
         #old_observations = [prepare_observation(env.get_empty_observation()) for agent in agents]
         observations = None
-
-        episode_loss = [[0 for agent in agents]]
         
         for step in tqdm(range(env_params['steps'])):
             # Spawn agents if necessary
@@ -48,25 +75,18 @@ def train(grid, agents, env_params, num_episodes=50):
                 obs = observations[agent_idx]
                 observations[agent_idx] = utils.prepare_observation(obs, env_params, (agent.screen_height, agent.screen_width))
             
-            actions = []
+            movement_actions = []
+            environment_actions = []
             for agent_idx in range(len(agents)):
                 agent = agents[agent_idx]
                 state = observations[agent_idx]#-old_observations[agent_idx]
-                action = agent.get_action(state, env.get_valid_movements(agent), train=True)
-                actions.append(action)
-            #print("actions", torch.tensor(actions, device=DEVICE))
-            actions_tensor = torch.tensor(actions, device=DEVICE)
-            
-            # Step actions in the environment
-            environment_actions = []
-            for agent_idx in range(len(agents)):
-                if agents[agent_idx].food:
-                    environment_actions.append((env.environment_actions[action], env_params['pheromone']['step']))
-                else:
-                    environment_actions.append((env.environment_actions[action], env_params['pheromone']['step_if_food']))
+                movement, pheromone = agent.get_action(state, env.get_valid_movements(agent), train=True)
+                movement_actions.append(movement)
+                environment_actions.append((env_params['env_actions'][movement.item()], pheromone))
+            movement_actions_tensor = torch.tensor(movement_actions, device=DEVICE)
+
             rewards = env.step(agents, environment_actions)
             rewards_tensor = torch.tensor(rewards, device=DEVICE)
-            #print("rewards", torch.tensor(rewards, device=DEVICE))
 
             # Get new observation for each agent
             next_observations = [utils.prepare_observation(obs, env_params, (agent.screen_height, agent.screen_width)) for obs in env.update_observation(agents)]
@@ -75,25 +95,23 @@ def train(grid, agents, env_params, num_episodes=50):
             for agent_idx in range(len(agents)):
                 state = observations[agent_idx]#-old_observations[agent_idx]
                 next_state = next_observations[agent_idx]#-observations[agent_idx]
-                agent.memory.push(state, actions_tensor[agent_idx].view(1,1), next_state, rewards_tensor[agent_idx].view(1))
+                shared_memory.push(state, movement_actions_tensor[agent_idx].view(1,1), next_state, rewards_tensor[agent_idx].view(1))
 
             # Save observations
             #old_observations = observations
 
             # Perform one step of the optimization (on the policy network) for all agents
-            for agent_id in range(len(agents)):
-                agent = agents[agent_id]
-                loss = agent.optimize_model()
-                if loss is not None:
-                    episode_loss[episode][agent_id] += loss/env_params['steps']
-        
-        print(episode_loss)
+            loss = train_agent.optimize_model(shared_memory)
+            if loss is not None:
+                    episode_loss[episode] += loss/env_params['steps']
+                
+        print(episode_loss[-1])
+        episode_loss.append(0)
         
         for agent in agents:
             # Update the target network, copying all weights and biases in DQN
-            if episode % TARGET_UPDATE == 0:
-                agent.target_net.load_state_dict(agent.policy_net.state_dict())
-        episode_loss.append([0 for agent in agents])
+            if episode % agent.TARGET_UPDATE == 0:
+                agent.target_net.load_state_dict(train_agent.policy_net.state_dict())
 
 def dqn_main():
     agents = [agent.DQNAgent(i, ENV_PARAMS) for i in range(5)]
