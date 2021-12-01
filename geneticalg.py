@@ -158,6 +158,12 @@ class GeneticAlgorithm:
                 crossover_idxs = random.sample(range(0, self.population_size), 2)
                 crossed = self.get_crossover(self.population[crossover_idxs[0]], 
                                              self.population[crossover_idxs[1]])
+                # NOT DONE FROM LUCY
+#                 # check feasibility of solution
+#                 while not self.check_feasibility(crossed):
+#                     crossover_idxs = random.sample(range(0, self.population_size), 2)
+#                     crossed = self.get_crossover(self.population[crossover_idxs[0]], 
+#                                              self.population[crossover_idxs[1]])
                 new_population.extend(crossed)
             
             # mutation
