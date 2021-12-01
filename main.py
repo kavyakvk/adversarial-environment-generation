@@ -37,6 +37,7 @@ print(ENV_PARAMS)
 
 ga = GeneticAlgorithm(population_size=100, env_params=ENV_PARAMS)
 test_agents = [agent.SwarmAgent(i, ENV_PARAMS) for i in range(5)]
+# test_agents = [agent.DQNAgent(i, ENV_PARAMS, net_filepath="DQN/target_net.pt") for i in range(5)]
 grids, fitness_values = ga.run(rate_elitism=0.1, rate_mutation=0.1, iterations=100, agents=test_agents, verbose=True, tdqm_disable=False) 
 print('grids:', grids)
 print('fitness values:', fitness_values)

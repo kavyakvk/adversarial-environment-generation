@@ -8,6 +8,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 import random
+import os
 from collections import namedtuple, deque
 
 ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
