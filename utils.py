@@ -122,6 +122,21 @@ def process_grids(observation, env_params, visual=True):
                 set_channel(i, j, dynamic_grid_processed, [greyscale_val]*3)
     return (agent_static_grid_processed, dynamic_grid_processed)
 
+
+def save_as_gif(env_observations, env_params, output_filename, to_size = (50, 50), frame_len = 50):
+    images = []
+    for obs in env_observations:
+        img_arr = set_frame(obs, env_params, update_mat = False)
+        image = Image.fromarray(img_arr)
+        image = image.quantize(method=Image.MEDIANCUT)
+        images.append(image.resize(to_size, resample = Image.BOX))
+
+    print("Saving as GIF...")
+    images[0].save(output_filename,
+                       save_all=True, append_images=images[1:], optimize=True, duration=frame_len, loop=0, lossless=True)
+
+    print("Your file", output_filename, "has been saved!")
+
 def prepare_observation(observation, env_params, resize_shape=None, training=True):
     resize = T.Compose([T.ToPILImage(),
                     T.Resize(resize_shape), #interpolation=T.InterpolationMode.CUBIC),
