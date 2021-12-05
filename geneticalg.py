@@ -140,7 +140,7 @@ class GeneticAlgorithm:
         self.env_params = env_params
         self.population = self.generate_n_valid_feasible_grids(self.population_size)
     
-    def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False, tdqm_disable=True):
+    def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False, tdqm_disable=True, tile_size=2):
         grids, fitness_values = [], []
         for i in range(iterations):
             fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tdqm_disable, position=0, leave=True)]
@@ -162,7 +162,7 @@ class GeneticAlgorithm:
             for j in range(num_crossover):
                 crossover_idxs = random.sample(range(0, self.population_size), 2)
                 crossed = self.get_crossover(self.population[crossover_idxs[0]], 
-                                             self.population[crossover_idxs[1]])
+                                             self.population[crossover_idxs[1]], tile_size)
                 new_population.extend(crossed)
             
             # mutation
