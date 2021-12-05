@@ -77,48 +77,53 @@ class SwarmAgent(Agent):
             next_movement = good_actions[np.random.randint(len(good_actions))]
         else:
             lay_pheromone = self.env_params['pheromone']['step']
-            # move forward, probs weighted by pheromone strength
-            if last_action == (-1,0):
-                d[self.obs_rad + 1 - fwd_only:, :] = 0
-
-            elif last_action == (0,1):
-                d[:, :self.obs_rad + fwd_only] = 0
-
-            elif last_action == (1,0):
-                d[:self.obs_rad + fwd_only, :] = 0
-
-            elif last_action == (0,-1):
-                d[:, self.obs_rad + 1 - fwd_only:] = 0
-        
-            dflat = d.flatten()
-            if np.sum(dflat) == 0:
-                probs = [1/len(dflat)] * len(dflat)
-            else:
-                probs = dflat/np.sum(dflat)
-
-            # choose random target location in fwd direction, weighted by pheromone
-            best_loc = np.random.choice(np.arange(len(dflat)), p = probs)
-            best_loc = self.unflatten(best_loc)
-                
-            good_actions = []     
-            # if best action row > agent row in observation window
-            if best_loc[0] > self.obs_rad:
-                good_actions.append((1,0))
-            if best_loc[0] < self.obs_rad:
-                good_actions.append((-1,0))
-            if best_loc[1] > self.obs_rad:
-                good_actions.append((0,1))
-            if best_loc[1] < self.obs_rad:
-                good_actions.append((0,-1))
-
-            assert(len(valid_movements) > 0)
-            # if list empty take random action from all actions not blocked by obstacles
-            good_actions = list(set(good_actions).intersection(set(valid_movements)))
-            if len(good_actions) > 0:
-                next_movement = good_actions[np.random.randint(len(good_actions))]
-            else:
+            
+            if random.random() < self.env_params['epsilon']:
+                # with probability epsilon take random action
                 next_movement = valid_movements[np.random.randint(len(valid_movements))]
+            else: 
+                # otherwise move forward, probs weighted by pheromone strength
+                if last_action == (-1,0):
+                    d[self.obs_rad + 1 - fwd_only:, :] = 0
 
+                elif last_action == (0,1):
+                    d[:, :self.obs_rad + fwd_only] = 0
+
+                elif last_action == (1,0):
+                    d[:self.obs_rad + fwd_only, :] = 0
+
+                elif last_action == (0,-1):
+                    d[:, self.obs_rad + 1 - fwd_only:] = 0
+
+                dflat = d.flatten()
+                if np.sum(dflat) == 0:
+                    probs = [1/len(dflat)] * len(dflat)
+                else:
+                    probs = dflat/np.sum(dflat)
+
+                # choose random target location in fwd direction, weighted by pheromone
+                best_loc = np.random.choice(np.arange(len(dflat)), p = probs)
+                best_loc = self.unflatten(best_loc)
+
+                good_actions = []     
+                # if best action row > agent row in observation window
+                if best_loc[0] > self.obs_rad:
+                    good_actions.append((1,0))
+                if best_loc[0] < self.obs_rad:
+                    good_actions.append((-1,0))
+                if best_loc[1] > self.obs_rad:
+                    good_actions.append((0,1))
+                if best_loc[1] < self.obs_rad:
+                    good_actions.append((0,-1))
+
+                assert(len(valid_movements) > 0)
+                # if list empty take random action from all actions not blocked by obstacles
+                good_actions = list(set(good_actions).intersection(set(valid_movements)))
+                if len(good_actions) > 0:
+                    next_movement = good_actions[np.random.randint(len(good_actions))]
+                else:
+                    next_movement = valid_movements[np.random.randint(len(valid_movements))]
+                        
         return next_movement, lay_pheromone
 
 # DQN based on tutorial from: https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html

@@ -122,11 +122,18 @@ def process_grids(observation, env_params, visual=True):
                 set_channel(i, j, dynamic_grid_processed, [greyscale_val]*3)
     return (agent_static_grid_processed, dynamic_grid_processed)
 
+# get frame for display in animation
+def get_ani_frame(obs, env_params):
+    pg = process_grids(obs, env_params)
+    to_replace = np.where((pg[0] == [0,0,0]).all(axis=2))
+    pg[0][to_replace] = pg[1][to_replace]
+    return pg[0].astype('uint8') 
+
 
 def save_as_gif(env_observations, env_params, output_filename, to_size = (50, 50), frame_len = 50):
     images = []
     for obs in env_observations:
-        img_arr = set_frame(obs, env_params, update_mat = False)
+        img_arr = get_ani_frame(obs, env_params)
         image = Image.fromarray(img_arr)
         image = image.quantize(method=Image.MEDIANCUT)
         images.append(image.resize(to_size, resample = Image.BOX))
