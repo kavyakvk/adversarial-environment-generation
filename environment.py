@@ -10,7 +10,7 @@ import utils
 #                             'rgb_coding': {0: [0, 0, 0], 1: [150, 0, 150], 2: [100, 100, 100], 3: [150, 150, 0], 4: [45, 0, 255], 5: [0, 255, 45], 6: (0, 250, 50), 7: (0, 245, 55), 8: (0, 240, 60), 9: (0, 235, 65), 10: (0, 230, 70), 11: (0, 225, 75), 12: (0, 220, 80), 13: (0, 215, 85), 14: (0, 210, 90)}}
 
 class Environment:
-    def __init__(self, env_params, grid=None):
+    def __init__(self, env_params, grid=None, assert_food_blockade_match = True):
         '''
             Grid
         '''
@@ -28,7 +28,8 @@ class Environment:
             self.static_grid[1][0] = self.env_params['coding_dict']['hive']
             self.static_grid[0][1] = self.env_params['coding_dict']['hive']
             self.static_grid[self.rows-1][self.cols-1] = 9              # Place food in the corner
-        utils.check_valid(self.static_grid, env_params)
+        if assert_food_blockade_match:
+            utils.check_valid(self.static_grid, env_params)
         self.environment_actions = env_params['env_actions']
 
         '''
