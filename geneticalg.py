@@ -140,7 +140,7 @@ class GeneticAlgorithm:
         self.env_params = env_params
         self.population = self.generate_n_valid_feasible_grids(self.population_size)
     
-    def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False, tdqm_disable=True, tile_size=2):
+    def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False, tdqm_disable=True, tile_size=2, filename=None):
         grids, fitness_values = [], []
         for i in range(iterations):
             fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tdqm_disable, position=0, leave=True)]
@@ -194,6 +194,16 @@ class GeneticAlgorithm:
             selected_population.extend(feasible_new_population)
             self.population = selected_population
             assert(len(self.population) == self.population_size)
+
+            #optionally pickle files
+            if filename:
+                pickle_dict = {
+                    'grids': grids,
+                    'fitness values': fitness_values,
+                    'env_params': self.env_params
+                }
+                with open(filename, 'wb') as f:
+                    pickle.dump(pickle_dict, f)
         return grids, fitness_values
         
 
