@@ -11,24 +11,6 @@ import random
 import os
 from collections import namedtuple, deque
 
-ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
-                            'N': 10, 'M': 10, 'max_food': 5, 'observation_radius': 1, 'steps': 300, 'spawn_rate': 2, 
-                            'pheromone': {'evaporation': 0.05, 'diffusion': 0.1, 'step': 0.1, 'step_if_food': 0.3, 'cap': 5}, 
-                            'grid': {'food': 40, 'blockade': 20}, 
-                            'env_actions': [(0,0),(0,-1), (0,1), (1,0), (-1,0)],
-                            'rgb_coding': {0: [0, 0, 0], 
-                                            1: [150, 0, 150], 2: [100, 100, 100], 
-                                            3: [150, 150, 0], 4: [45, 0, 255], 
-                                            5: [0, 255, 45], 6: (0, 250, 50), 
-                                            7: (0, 245, 55), 8: (0, 240, 60), 
-                                            9: (0, 235, 65), 10: (0, 230, 70), 
-                                            11: (0, 225, 75), 12: (0, 220, 80), 
-                                            13: (0, 215, 85), 14: (0, 210, 90)}}
-
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-print(DEVICE)
-
 Transition = namedtuple('Transition',
                                 ('state', 'action', 'next_state', 'reward'))
 
@@ -47,7 +29,9 @@ class ReplayMemory(object):
     def __len__(self):
         return len(self.memory)
 
-def train(agents, env_params, filename, num_episodes=50):
+def train(agents, env_params, filename, num_episodes=50, grids=None):
+    gpu_device = agents[0].gpu
+
     episode_loss = [0]
     episode_rewards = [[0 for agent in agents]]
     episode_food = [0]
@@ -56,8 +40,15 @@ def train(agents, env_params, filename, num_episodes=50):
 
     train_agent = agents[1]
 
+    chosen_grids = grids
+    if grids is None:
+        chosen_grids = utils.generate_n_valid_feasible_grids(num_episodes, env_params)
+    elif len(grids) < num_episodes:
+        chosen_grids = grids.extend(utils.generate_n_valid_feasible_grids(num_episodes-len(grids), env_params))
+        
+
     for episode in range(num_episodes):
-        grid = utils.generate_n_valid_feasible_grids(1, env_params)[0]
+        grid = chosen_grids[episode]
         env = environment.Environment(env_params, grid)
 
         for agent in agents:
@@ -89,10 +80,10 @@ def train(agents, env_params, filename, num_episodes=50):
                 movement, pheromone = agent.get_action(state, env.get_valid_movements(agent), train=True)
                 movement_actions.append(movement)
                 environment_actions.append((env_params['env_actions'][movement.item()], pheromone))
-            movement_actions_tensor = torch.tensor(movement_actions, device=DEVICE)
+            movement_actions_tensor = torch.tensor(movement_actions, device=gpu_device)
 
             rewards, collected_food = env.step(agents, environment_actions)
-            rewards_tensor = torch.tensor(rewards, device=DEVICE)
+            rewards_tensor = torch.tensor(rewards, device=gpu_device)
             episode_rewards[episode] = [episode_rewards[episode][k]+rewards[k] for k in range(len(agents))]
             episode_food[episode] += collected_food
 
@@ -127,14 +118,11 @@ def train(agents, env_params, filename, num_episodes=50):
         
     return episode_loss, episode_rewards 
 
-def dqn_main():
-    agents = [agent.DQNAgent(i, ENV_PARAMS) for i in range(5)]
-    episode_loss, episode_rewards = train(agents, ENV_PARAMS, filename=cwd+"DQN/target_net.pt", num_episodes=100)
+def dqn_main(env_params, agents, grids = None, filename=cwd+"DQN/target_net.pt", num_episodes=20):
+    episode_loss, episode_rewards = train(agents, env_params, filename=filename, num_episodes=num_episodes, grids=grids)
 
-    with open(cwd+'DQN/DQN_training_rewards.pkl', 'wb') as f:
-        pickle.dump(episode_rewards, f)
-    with open(cwd+'DQN/DQN_training_loss.pkl', 'wb') as f:
-        pickle.dump(episode_loss, f)
-
-
-dqn_main()
+    # with open(cwd+'DQN/DQN_training_rewards.pkl', 'wb') as f:
+    #     pickle.dump(episode_rewards, f)
+    # with open(cwd+'DQN/DQN_training_loss.pkl', 'wb') as f:
+    #     pickle.dump(episode_loss, f)
+    return episode_rewards, episode_loss
