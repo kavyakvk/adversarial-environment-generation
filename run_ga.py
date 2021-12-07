@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     print("Initialized agents")
 
-    filename = f'Pickled/Final/GA_{args.num_agents}{args.agent_type}Agent_{args.ga_tile_size}tile_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks'
+    filename = f'Pickled/Final/GA_{args.num_agents}{args.agent_type[0]}Agent_{args.ga_tile_size}tile_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks'
     grids, fitness_values = ga.run(rate_elitism=args.ga_rate_elitism, 
                                     rate_mutation=args.ga_rate_mutation, 
                                     iterations=args.ga_iterations, 
