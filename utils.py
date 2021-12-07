@@ -11,6 +11,21 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
 
+def encode_rgb(env_params):
+    rgb_coding = {env_params['coding_dict']['empty']: [0, 0, 0], #white
+                    env_params['coding_dict']['agent']: [150, 0, 150], #purple
+                    env_params['coding_dict']['bounds']: [100,100,100], #grey
+                    env_params['coding_dict']['hive']: [150,150,0], #yellow
+                    env_params['coding_dict']['blockade']: [45,0,255], #blue
+                    env_params['coding_dict']['food_start']: [0,255,45]}
+
+    for food in range(1,10):
+        color = copy.deepcopy(rgb_coding[env_params['coding_dict']['food_start']])
+        color[1] -= food*5
+        color[2] += food*5
+        rgb_coding[env_params['coding_dict']['food_start']+food] = tuple(color)
+    env_params['rgb_coding'] = rgb_coding
+
 def calculate_food(grid, env_params):
     counts = np.bincount(grid.flatten().astype('int64'))
     food_counts = counts[env_params['coding_dict']['food_start']:]

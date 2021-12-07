@@ -18,21 +18,6 @@ ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'b
                             11: (0, 225, 75), 12: (0, 220, 80), 
                             13: (0, 215, 85), 14: (0, 210, 90)}}
 
-def encode_rgb():
-    rgb_coding = {ENV_PARAMS['coding_dict']['empty']: [0, 0, 0], #white
-                    ENV_PARAMS['coding_dict']['agent']: [150, 0, 150], #purple
-                    ENV_PARAMS['coding_dict']['bounds']: [100,100,100], #grey
-                    ENV_PARAMS['coding_dict']['hive']: [150,150,0], #yellow
-                    ENV_PARAMS['coding_dict']['blockade']: [45,0,255], #blue
-                    ENV_PARAMS['coding_dict']['food_start']: [0,255,45]}
-
-    for food in range(1,10):
-        color = copy.deepcopy(rgb_coding[ENV_PARAMS['coding_dict']['food_start']])
-        color[1] -= food*5
-        color[2] += food*5
-        rgb_coding[ENV_PARAMS['coding_dict']['food_start']+food] = tuple(color)
-    ENV_PARAMS['rgb_coding'] = rgb_coding
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
@@ -51,6 +36,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Override global environment parameters
     ENV_PARAMS['grid']['food'] = args.num_food
     ENV_PARAMS['grid']['blockade'] = args.num_blockade
 
