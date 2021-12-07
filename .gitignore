@@ -6,3 +6,4 @@ Pickled/.ipynb_checkpoints/
 __pycache__/agent.cpython-38.pyc
 *.pyc
 *.pyc
+*.pem
