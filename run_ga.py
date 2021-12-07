@@ -53,6 +53,8 @@ if __name__ == "__main__":
 
     ga = GeneticAlgorithm(population_size=args.ga_population_size, env_params=ENV_PARAMS)
 
+    print("Initialized GA")
+
     test_agents = None
     if 'DQN' in args.agent_type:
         gpu_num = None
@@ -64,11 +66,13 @@ if __name__ == "__main__":
     elif 'Swarm' in args.agent_type:
         test_agents = [agent.SwarmAgent(i, ENV_PARAMS) for i in range(args.num_agents)]
 
+    print("Initialized agents")
+
     filename = f'Pickled/Final/GA_{args.num_agents}{args.agent_type}Agent_{args.ga_tile_size}tile_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks'
     grids, fitness_values = ga.run(rate_elitism=args.ga_rate_elitism, 
                                     rate_mutation=args.ga_rate_mutation, 
                                     iterations=args.ga_iterations, 
                                     agents=test_agents, 
-                                    verbose=True, tdqm_disable=True, tile_size=args.ga_tile_size,
+                                    verbose=True, tdqm_disable=False, tile_size=args.ga_tile_size,
                                     filename=filename) 
     print(filename)
