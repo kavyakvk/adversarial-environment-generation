@@ -127,9 +127,12 @@ class SwarmAgent(Agent):
 # DQN based on tutorial from: https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 class DQN(nn.Module):
 
-    def __init__(self, h, w, outputs, gpu_num):
+    def __init__(self, h, w, outputs, gpu_num=None):
         super(DQN, self).__init__()
-        self.gpu = torch.device(f'cuda:{gpu_num}')
+        if gpu_num is None:
+            self.gpu = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.gpu = torch.device(f'cuda:{gpu_num}')
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
         self.bn1 = nn.BatchNorm2d(16)
@@ -163,7 +166,10 @@ class DQNAgent(Agent):
     def __init__(self, id, env_params, net_filepath=None, spt=None, gpu_num=None):
         super().__init__(id, env_params, spt)
 
-        self.gpu = torch.device(f'cuda:{gpu_num}')
+        if gpu_num is None:
+            self.gpu = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.gpu = torch.device(f'cuda:{gpu_num}')
 
         obs_window = self.env_params['observation_radius']*2+1
         
@@ -178,8 +184,8 @@ class DQNAgent(Agent):
 
         self.environment_actions = self.env_params['env_actions']
         self.n_actions = len(self.environment_actions)
-        self.policy_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(self.gpu)
-        self.target_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(self.gpu)
+        self.policy_net = DQN(self.screen_height, self.screen_width, self.n_actions, gpu_num=gpu_num).to(self.gpu)
+        self.target_net = DQN(self.screen_height, self.screen_width, self.n_actions, gpu_num=gpu_num).to(self.gpu)
         
         if net_filepath is not None:
             self.policy_net.load_state_dict(torch.load(net_filepath))

@@ -39,8 +39,9 @@ if __name__ == "__main__":
     parser.add_argument('--num_food', default=40, type=int)
     parser.add_argument('--num_blockade', default=20, type=int)
 
-    parser.add_argument('--num_agents', default=15, type=int)
+    parser.add_argument('--num_agaents', default=5, type=int)
     parser.add_argument('-a', '--agent_type', action='append', choices=['DQN', 'Random', 'Swarm'], required=True)
+    parser.add_argument('--agent_gpu', default=-1, type=int)
 
     parser.add_argument('--ga_population_size', default=100, type=int)
     parser.add_argument('--ga_rate_elitism', default=0.2, type=float)
@@ -54,7 +55,10 @@ if __name__ == "__main__":
 
     test_agents = None
     if 'DQN' in args.agent_type:
-        test_agents = [agent.DQNAgent(i, ENV_PARAMS, net_filepath="DQN/target_net.pt") for i in range(args.num_agents)]
+        gpu_num = None
+        if args.agent_gpu > -1:
+            gpu_num = args.agent_gpu
+        test_agents = [agent.DQNAgent(i, ENV_PARAMS, net_filepath="DQN/target_net.pt", gpu_num=gpu_num) for i in range(args.num_agents)]
     elif 'Random' in args.agent_type:
         test_agents = [agent.RandomAgent(i, ENV_PARAMS) for i in range(args.num_agents)]
     elif 'Swarm' in args.agent_type:
