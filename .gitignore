@@ -3,3 +3,6 @@ __pycache__/
 .ipynb_checkpoints/
 Pickled/.DS_Store
 Pickled/.ipynb_checkpoints/
+__pycache__/agent.cpython-38.pyc
+*.pyc
+*.pyc

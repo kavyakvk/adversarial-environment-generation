@@ -44,7 +44,6 @@ if __name__ == "__main__":
     parser.add_argument('--num_agents', default=15, type=int)
     parser.add_argument('-a', '--agent_type', action='append', choices=['DQN', 'Random', 'Swarm'], required=True)
 
-
     parser.add_argument('--ga_population_size', default=100, type=int)
     parser.add_argument('--ga_rate_elitism', default=0.2, type=float)
     parser.add_argument('--ga_rate_mutation', default=0.1, type=float)
@@ -56,11 +55,11 @@ if __name__ == "__main__":
     ga = GeneticAlgorithm(population_size=args.ga_population_size, env_params=ENV_PARAMS)
 
     test_agents = None
-    if args.agent_type == 'DQN':
+    if 'DQN' in args.agent_type:
         test_agents = [agent.DQNAgent(i, ENV_PARAMS, net_filepath="DQN/target_net.pt") for i in range(args.num_agents)]
-    elif args.agent_type == 'Random':
+    elif 'Random' in args.agent_type:
         test_agents = [agent.RandomAgent(i, ENV_PARAMS) for i in range(args.num_agents)]
-    elif args.agent_type == 'Swarm':
+    elif 'Swarm' in args.agent_type:
         test_agents = [agent.SwarmAgent(i, ENV_PARAMS) for i in range(args.num_agents)]
 
     filename = f'Pickled/Final/GA_{args.num_agents}{args.agent_type}Agent_{args.ga_tile_size}tile_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks'
@@ -70,3 +69,4 @@ if __name__ == "__main__":
                                     agents=test_agents, 
                                     verbose=True, tdqm_disable=True, tile_size=args.ga_tile_size,
                                     filename=filename) 
+    print(filename)
