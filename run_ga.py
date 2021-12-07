@@ -39,7 +39,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_food', default=40, type=int)
     parser.add_argument('--num_blockade', default=20, type=int)
 
-    parser.add_argument('--num_agaents', default=5, type=int)
+    parser.add_argument('--num_agents', default=5, type=int)
     parser.add_argument('-a', '--agent_type', action='append', choices=['DQN', 'Random', 'Swarm'], required=True)
     parser.add_argument('--agent_gpu', default=-1, type=int)
 
