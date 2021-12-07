@@ -150,6 +150,7 @@ class GeneticAlgorithm:
             pickle_dict = pickle.load(pickle_file)
             grids, fitness_values = pickle_dict['grids'], pickle_dict['fitness values']
             pickle_file.close()
+            self.population = copy.deepcopy(grids[-1])
             
         for i in range(iterations):
             fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tdqm_disable, position=0, leave=True)]
