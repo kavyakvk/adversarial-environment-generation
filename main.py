@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--ga_population_size', default=100, type=int)
     parser.add_argument('--ga_rate_elitism', default=0.2, type=float)
-    parser.add_argument('--ga_rate_mutation', default=0.2, type=float)
+    parser.add_argument('--ga_rate_mutation', default=0.1, type=float)
     parser.add_argument('--ga_iterations', default=50, type=float)
     parser.add_argument('--ga_tile_size', default=2, type=int)
 
