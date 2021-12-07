@@ -16,8 +16,6 @@ import numpy as np
 import random
 import math
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 class Agent():
     def __init__(self, id, env_params, spt=None):
         self.env_params = env_params
@@ -129,8 +127,10 @@ class SwarmAgent(Agent):
 # DQN based on tutorial from: https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 class DQN(nn.Module):
 
-    def __init__(self, h, w, outputs):
+    def __init__(self, h, w, outputs, gpu_num):
         super(DQN, self).__init__()
+        self.gpu = torch.device(f'cuda:{gpu_num}')
+
         self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
         self.bn1 = nn.BatchNorm2d(16)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
@@ -150,7 +150,7 @@ class DQN(nn.Module):
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-        x = x.to(DEVICE)
+        x = x.to(self.gpu)
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
@@ -160,8 +160,10 @@ Transition = namedtuple('Transition',
                                 ('state', 'action', 'next_state', 'reward'))
 
 class DQNAgent(Agent):
-    def __init__(self, id, env_params, net_filepath=None, spt=None):
+    def __init__(self, id, env_params, net_filepath=None, spt=None, gpu_num=None):
         super().__init__(id, env_params, spt)
+
+        self.gpu = torch.device(f'cuda:{gpu_num}')
 
         obs_window = self.env_params['observation_radius']*2+1
         
@@ -176,8 +178,8 @@ class DQNAgent(Agent):
 
         self.environment_actions = self.env_params['env_actions']
         self.n_actions = len(self.environment_actions)
-        self.policy_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(DEVICE)
-        self.target_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(DEVICE)
+        self.policy_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(self.gpu)
+        self.target_net = DQN(self.screen_height, self.screen_width, self.n_actions).to(self.gpu)
         
         if net_filepath is not None:
             self.policy_net.load_state_dict(torch.load(net_filepath))
@@ -197,7 +199,7 @@ class DQNAgent(Agent):
             next_movement = good_actions[np.random.randint(len(good_actions))]
 
             if train:
-                return torch.tensor([[self.environment_actions.index(next_movement)]], device=DEVICE, dtype=torch.long), lay_pheromone
+                return torch.tensor([[self.environment_actions.index(next_movement)]], device=self.gpu, dtype=torch.long), lay_pheromone
             else:
                 return next_movement, lay_pheromone
             
@@ -232,7 +234,7 @@ class DQNAgent(Agent):
                         return self.environment_actions[int(opt_action_id)], lay_pheromone
             else:
                 if train:
-                    return torch.tensor([[self.environment_actions.index(random.choice(valid_movements))]], device=DEVICE, dtype=torch.long), lay_pheromone
+                    return torch.tensor([[self.environment_actions.index(random.choice(valid_movements))]], device=self.gpu, dtype=torch.long), lay_pheromone
                 else:
                     return random.choice(valid_movements), lay_pheromone
 
@@ -250,7 +252,7 @@ class DQNAgent(Agent):
         # Compute a mask of non-final states and concatenate the batch elements
         # (a final state would've been the one after which simulation ended)
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                            batch.next_state)), device=DEVICE, dtype=torch.bool)
+                                            batch.next_state)), device=self.gpu, dtype=torch.bool)
         non_final_next_states = torch.cat([s for s in batch.next_state
                                                     if s is not None])
         state_batch = torch.cat(batch.state)
@@ -267,7 +269,7 @@ class DQNAgent(Agent):
         # on the "older" target_net; selecting their best reward with max(1)[0].
         # This is merged based on the mask, such that we'll have either the expected
         # state value or 0 in case the state was final.
-        next_state_values = torch.zeros(self.BATCH_SIZE, device=DEVICE)
+        next_state_values = torch.zeros(self.BATCH_SIZE, device=self.gpu)
         next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * self.GAMMA) + reward_batch
