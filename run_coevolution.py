@@ -55,9 +55,11 @@ if __name__ == "__main__":
         gpu_num = args.agent_gpu
     test_agents = [agent.DQNAgent(i, ENV_PARAMS, net_filepath=args.agent_initial_weights, gpu_num=gpu_num) for i in range(args.num_agents)]
 
-    os.mkdir('Pickled/Final/KavyaRuns/Coevolution/')
+    if not os.path.isdir('Pickled/Final/KavyaRuns/Coevolution/')
+        os.mkdir('Pickled/Final/KavyaRuns/Coevolution/')
     run_folder = f'Pickled/Final/KavyaRuns/Coevolution/Coevolution{args.num_agents}DQNAgent_{args.ga_tile_size}tile_{args.ga_rate_elitism}elitism_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks/'
-    os.mkdir(run_folder)
+    if not os.path.isdir(run_folder)
+        os.mkdir(run_folder)
     duel_train_filename = f'{run_folder}Coevolution{args.num_agents}DQNAgent_{args.ga_tile_size}tile_{args.ga_rate_elitism}elitism_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks'
     temp_ga_filename = f'{run_folder}tempGAdata'
     print("Initialized agents")
