@@ -65,7 +65,7 @@ if __name__ == "__main__":
     duel_training_pickle = {}
 
     pickle_dict = None
-    grids, fitness_values = None
+    grids, fitness_values = None, None
     with open(args.ga_initial_population, 'rb') as f:
         pickle_dict = pickle.load(f)
 
