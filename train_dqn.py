@@ -124,7 +124,7 @@ def train(agents, env_params, filename, num_episodes=50, grids=None, random_prop
         
     return episode_loss, episode_rewards 
 
-def dqn_main(env_params, agents, grids = None, random_proportion=0.2, filename=cwd+"DQN/target_net.pt", num_episodes=20, verbose=True):
+def dqn_main(env_params, agents, grids = None, random_proportion=0.2, filename="DQN/target_net.pt", num_episodes=20, verbose=True):
     episode_loss, episode_rewards = train(agents, env_params, 
                                             filename=filename, num_episodes=num_episodes, 
                                             grids=grids, random_proportion=0.2,
