@@ -6,6 +6,7 @@ import copy
 import pickle
 import argparse
 import os
+import random
 
 ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 6}, 
                             'N': 12, 'M': 12, 'max_food': 5, 'observation_radius': 1, 'steps': 300, 'spawn_rate': 2, 
@@ -71,6 +72,20 @@ if __name__ == "__main__":
     grids, fitness_values = None, None
     with open(args.ga_initial_population, 'rb') as f:
         pickle_dict = pickle.load(f)
+    
+    grids, fitness_values = pickle_dict['grids'], pickle_dict['fitness values']
+    elitism_size = int(args.ga_population_size*args.ga_rate_elitism)
+    selected = sorted(range(len(fitness_values[-1])), key=lambda x: fitness_values[-1][x], reverse=True)[:elitism_size]
+    elitism_population, elitism_fitness = [grids[-1][x] for x in selected], [fitness_values[-1][x] for x in selected]
+    
+    remaining = random.sample([i for i in range(len(grids[-1]))], args.ga_population_size-elitism_size)
+    remaining_population, remaining_fitness = [grids[-1][x] for x in remaining], [fitness_values[-1][x] for x in remaining] 
+
+    elitism_population.extend(remaining_population)
+    elitism_fitness.extend(remaining_fitness)
+    grids, fitness_values = [elitism_population], [elitism_fitness]
+
+    assert(len(elitism_population) == len(elitism_fitness) and len(elitism_fitness) == args.ga_population_size)
 
     for iteration in range(args.duel_train_iterations):
         print("iteration ", iteration)
