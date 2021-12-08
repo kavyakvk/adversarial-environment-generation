@@ -29,7 +29,8 @@ class ReplayMemory(object):
     def __len__(self):
         return len(self.memory)
 
-def train(agents, env_params, filename, num_episodes=50, grids=None):
+def train(agents, env_params, filename, num_episodes=50, grids=None, random_proportion=0.2, verbose=True):
+    tqdm_disable = not verbose
     gpu_device = agents[0].gpu
 
     episode_loss = [0]
@@ -43,10 +44,14 @@ def train(agents, env_params, filename, num_episodes=50, grids=None):
     chosen_grids = grids
     if grids is None:
         chosen_grids = utils.generate_n_valid_feasible_grids(num_episodes, env_params)
-    elif len(grids) < num_episodes:
-        chosen_grids = grids.extend(utils.generate_n_valid_feasible_grids(num_episodes-len(grids), env_params))
+    else:
+        num_random_grids = int(random_proportion*num_episodes)
+        num_elite_grids = min(len(grids), num_episodes-num_random_grids)
+        num_random_grids = num_episodes - num_elite_grids
+        chosen_grids = random.sample(grids, num_elite_grids)
+        chosen_grids.extend(utils.generate_n_valid_feasible_grids(num_random_grids, env_params))
+        random.shuffle(chosen_grids)
         
-
     for episode in range(num_episodes):
         grid = chosen_grids[episode]
         env = environment.Environment(env_params, grid)
@@ -54,14 +59,15 @@ def train(agents, env_params, filename, num_episodes=50, grids=None):
         for agent in agents:
             agent.set_spt(env.spt)
         
-        print("Episode", episode)
+        if verbose:
+            print("Episode", episode)
         # Initialize the environment and spawn queue
         env.reset(agents, grid)
         env.initialize_spawn_queue(agents)
         #old_observations = [prepare_observation(env.get_empty_observation()) for agent in agents]
         observations = None
         
-        for step in tqdm(range(env_params['steps'])):
+        for step in tqdm(range(env_params['steps'])), disable=tdqm_disable:
             # Spawn agents if necessary
             env.spawn_agents(agents)
 
@@ -118,8 +124,11 @@ def train(agents, env_params, filename, num_episodes=50, grids=None):
         
     return episode_loss, episode_rewards 
 
-def dqn_main(env_params, agents, grids = None, filename=cwd+"DQN/target_net.pt", num_episodes=20):
-    episode_loss, episode_rewards = train(agents, env_params, filename=filename, num_episodes=num_episodes, grids=grids)
+def dqn_main(env_params, agents, grids = None, random_proportion=0.2, filename=cwd+"DQN/target_net.pt", num_episodes=20, verbose=True):
+    episode_loss, episode_rewards = train(agents, env_params, 
+                                            filename=filename, num_episodes=num_episodes, 
+                                            grids=grids, random_proportion=0.2,
+                                            verbose=True)
 
     # with open(cwd+'DQN/DQN_training_rewards.pkl', 'wb') as f:
     #     pickle.dump(episode_rewards, f)

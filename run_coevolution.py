@@ -54,10 +54,11 @@ if __name__ == "__main__":
         gpu_num = args.agent_gpu
     test_agents = [agent.DQNAgent(i, ENV_PARAMS, net_filepath=args.agent_initial_weights, gpu_num=gpu_num) for i in range(args.num_agents)]
 
-    os.mkdir('Pickled/Final/KavyaRuns/DuelTraining/')
-    run_folder = f'Pickled/Final/KavyaRuns/DuelTraining/DuelTraining_{args.num_agents}DQNAgent_{args.ga_tile_size}tile_{args.ga_rate_elitism}elitism_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks/'
+    os.mkdir('Pickled/Final/KavyaRuns/Coevolution/')
+    run_folder = f'Pickled/Final/KavyaRuns/Coevolution/Coevolution{args.num_agents}DQNAgent_{args.ga_tile_size}tile_{args.ga_rate_elitism}elitism_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks/'
     os.mkdir(run_folder)
-    duel_train_filename = f'{run_folder}DuelTraining_{args.num_agents}DQNAgent_{args.ga_tile_size}tile_{args.ga_rate_elitism}elitism_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks'
+    duel_train_filename = f'{run_folder}Coevolution{args.num_agents}DQNAgent_{args.ga_tile_size}tile_{args.ga_rate_elitism}elitism_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks'
+    temp_ga_filename = f'{run_folder}tempGAdata'
     print("Initialized agents")
 
     duel_training_pickle = {}
@@ -71,22 +72,31 @@ if __name__ == "__main__":
         print("iteration ", iteration)
         grids, fitness_values = pickle_dict['grids'], pickle_dict['fitness values']
 
-        episode_rewards, episode_loss = train_dqn.dqn_main(env_params, test_agents, 
-                                                            grids = grids[-1], 
+        with open(temp_ga_filename, 'wb') as f:
+            pickle.dump(pickle_dict, f)
+
+        elitism_size = int(args.ga_population_size*args.ga_rate_elitism)
+        selected = sorted(range(len(fitness_values[-1])), key=lambda x: fitness_values[-1][x], reverse=True)[:elitism_size]
+        elitism_population = [grids[-1][x] for x in range(len(fitness_values[-1])) if x in selected]
+
+        episode_rewards, episode_loss = train_dqn.dqn_main(ENV_PARAMS, test_agents, 
+                                                            grids = elitism_population, 
+                                                            random_proportion=0.2,
                                                             filename=f'{run_folder}target_net_{iteration}iteration.pt', 
-                                                            num_episodes=5)
+                                                            num_episodes=10, verbose=True)
         print("\ttrained DQN")
         grids, fitness_values = ga.run(rate_elitism=args.ga_rate_elitism, 
                                         rate_mutation=args.ga_rate_mutation, 
                                         iterations=args.ga_iterations, 
                                         agents=test_agents, 
-                                        verbose=True, tdqm_disable=False, tile_size=args.ga_tile_size) 
+                                        verbose=True, tdqm_disable=False, tile_size=args.ga_tile_size,
+                                        filename=temp_ga_filename) 
         pickle_dict = {
             'train_episode_rewards': episode_rewards, 
             'train_episode_loss': episode_loss,
             'grids': grids,
             'fitness values': fitness_values,
-            'env_params': self.env_params
+            'env_params': ENV_PARAMS
         }
 
         duel_training_pickle[iteration] = pickle_dict
