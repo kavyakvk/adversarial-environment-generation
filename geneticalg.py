@@ -141,7 +141,7 @@ class GeneticAlgorithm:
         self.env_params = env_params
         self.population = self.generate_n_valid_feasible_grids(self.population_size)
     
-    def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False, tdqm_disable=True, tile_size=2, filename=None, continue_training = False):
+    def run(self, rate_elitism, rate_mutation, iterations, agents, verbose=False, tqdm_disable=True, tile_size=2, filename=None, continue_training = False):
         grids, fitness_values = [], []
         # continue training from results in a previously pickled file
         if continue_training:
@@ -153,7 +153,7 @@ class GeneticAlgorithm:
             self.population = copy.deepcopy(grids[-1])
             
         for i in range(iterations):
-            fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tdqm_disable, position=0, leave=True)]
+            fitness = [self.get_fitness(x, agents) for x in tqdm(self.population, disable=tqdm_disable, position=0, leave=True)]
             if verbose:
                 print("ITERATION ", i, sum(fitness)/len(fitness))
             

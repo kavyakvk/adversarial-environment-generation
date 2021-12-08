@@ -62,6 +62,6 @@ if __name__ == "__main__":
                                     rate_mutation=args.ga_rate_mutation, 
                                     iterations=args.ga_iterations, 
                                     agents=test_agents, 
-                                    verbose=True, tdqm_disable=False, tile_size=args.ga_tile_size,
+                                    verbose=True, tqdm_disable=False, tile_size=args.ga_tile_size,
                                     filename=filename) 
     print(filename)

@@ -67,7 +67,7 @@ def train(agents, env_params, filename, num_episodes=50, grids=None, random_prop
         #old_observations = [prepare_observation(env.get_empty_observation()) for agent in agents]
         observations = None
         
-        for step in tqdm(range(env_params['steps']), disable=tdqm_disable):
+        for step in tqdm(range(env_params['steps']), disable=tqdm_disable):
             # Spawn agents if necessary
             env.spawn_agents(agents)
 
