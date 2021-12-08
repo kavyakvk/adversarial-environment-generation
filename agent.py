@@ -163,6 +163,10 @@ Transition = namedtuple('Transition',
                                 ('state', 'action', 'next_state', 'reward'))
 
 class DQNAgent(Agent):
+    def load_weights(self, net_filepath):
+        self.policy_net.load_state_dict(torch.load(net_filepath))
+        self.target_net.load_state_dict(self.policy_net.state_dict())
+    
     def __init__(self, id, env_params, net_filepath=None, spt=None, gpu_num=None):
         super().__init__(id, env_params, spt)
 
@@ -188,9 +192,7 @@ class DQNAgent(Agent):
         self.target_net = DQN(self.screen_height, self.screen_width, self.n_actions, gpu_num=gpu_num).to(self.gpu)
         
         if net_filepath is not None:
-            self.policy_net.load_state_dict(torch.load(net_filepath))
-
-        self.target_net.load_state_dict(self.policy_net.state_dict())
+            self.load_weights(net_filepath)
         self.target_net.eval()
 
         self.optimizer = optim.RMSprop(self.policy_net.parameters())   

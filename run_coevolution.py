@@ -31,16 +31,16 @@ if __name__ == "__main__":
     parser.add_argument('--num_agents', default=5, type=int)
     parser.add_argument('--agent_gpu', default=-1, type=int)
     parser.add_argument('--agent_initial_weights', default="DQN/target_net.pt", type=str)
-    parser.add_argument('--agent_episodes', default=10, type=int)
+    parser.add_argument('--agent_episodes', default=20, type=int)
 
-    parser.add_argument('--ga_population_size', default=20, type=int)
+    parser.add_argument('--ga_population_size', default=30, type=int)
     parser.add_argument('--ga_rate_elitism', default=0.2, type=float)
     parser.add_argument('--ga_rate_mutation', default=0.1, type=float)
     parser.add_argument('--ga_iterations', default=5, type=float)
     parser.add_argument('--ga_tile_size', default=2, type=int)
     parser.add_argument('--ga_initial_population', default="Pickled/Final/KavyaRuns/GA_5DQNAgent_2tile_0.1mutation_40food_20blocks", type=str)
 
-    parser.add_argument('--duel_train_iterations', default=5, type=int)
+    parser.add_argument('--duel_train_iterations', default=20, type=int)
 
     args = parser.parse_args()
 
@@ -104,6 +104,9 @@ if __name__ == "__main__":
                                                             filename=f'{run_folder}target_net_{iteration}iteration.pt', 
                                                             num_episodes=args.agent_episodes, verbose=True)
         print("\ttrained DQN")
+        for agent in test_agents:
+            agent.load_weights(net_filepath=f'{run_folder}target_net_{iteration}iteration.pt'):
+        print("\tloaded DQN weights")
         grids, fitness_values = ga.run(rate_elitism=args.ga_rate_elitism, 
                                         rate_mutation=args.ga_rate_mutation, 
                                         iterations=args.ga_iterations, 
