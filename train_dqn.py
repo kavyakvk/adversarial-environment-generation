@@ -109,8 +109,9 @@ def train(agents, env_params, filename, num_episodes=50, grids=None, random_prop
             loss = train_agent.optimize_model(shared_memory)
             if loss is not None:
                     episode_loss[episode] += loss/env_params['steps']
-                
-        print(episode_loss[-1], episode_rewards[-1], episode_food[-1])
+        
+        if verbose:
+            print(episode_loss[-1], episode_rewards[-1], episode_food[-1])
         episode_loss.append(0)
         episode_rewards.append([0 for agent in agents])
         episode_food.append(0)
