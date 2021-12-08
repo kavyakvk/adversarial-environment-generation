@@ -98,7 +98,7 @@ if __name__ == "__main__":
         selected = sorted(range(len(fitness_values[-1])), key=lambda x: fitness_values[-1][x], reverse=True)[:elitism_size]
         elitism_population = [grids[-1][x] for x in range(len(fitness_values[-1])) if x in selected]
 
-        episode_rewards, episode_loss = train_dqn.dqn_main(ENV_PARAMS, test_agents, 
+        episode_rewards, episode_loss, episode_food = train_dqn.dqn_main(ENV_PARAMS, test_agents, 
                                                             grids = elitism_population, 
                                                             random_proportion=0.2,
                                                             filename=f'{run_folder}target_net_{iteration}iteration.pt', 
@@ -116,6 +116,7 @@ if __name__ == "__main__":
         pickle_dict = {
             'train_episode_rewards': episode_rewards, 
             'train_episode_loss': episode_loss,
+            'train_episode_food': episode_food,
             'grids': grids,
             'fitness values': fitness_values,
             'env_params': ENV_PARAMS

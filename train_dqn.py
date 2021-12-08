@@ -123,10 +123,10 @@ def train(agents, env_params, filename, num_episodes=50, grids=None, random_prop
         
         torch.save(train_agent.target_net.state_dict(), filename)
         
-    return episode_loss, episode_rewards 
+    return episode_loss, episode_rewards, episode_food
 
 def dqn_main(env_params, agents, grids = None, random_proportion=0.2, filename="DQN/target_net.pt", num_episodes=20, verbose=True):
-    episode_loss, episode_rewards = train(agents, env_params, 
+    episode_loss, episode_rewards, episode_food = train(agents, env_params, 
                                             filename=filename, num_episodes=num_episodes, 
                                             grids=grids, random_proportion=0.2,
                                             verbose=True)
