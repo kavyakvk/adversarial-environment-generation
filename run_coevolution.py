@@ -105,7 +105,7 @@ if __name__ == "__main__":
                                                             num_episodes=args.agent_episodes, verbose=True)
         print("\ttrained DQN")
         for agent in test_agents:
-            agent.load_weights(net_filepath=f'{run_folder}target_net_{iteration}iteration.pt'):
+            agent.load_weights(net_filepath=f'{run_folder}target_net_{iteration}iteration.pt')
         print("\tloaded DQN weights")
         grids, fitness_values = ga.run(rate_elitism=args.ga_rate_elitism, 
                                         rate_mutation=args.ga_rate_mutation, 
