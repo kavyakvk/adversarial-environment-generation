@@ -59,10 +59,10 @@ if __name__ == "__main__":
 
     if not os.path.isdir('Pickled/Final/KavyaRuns/Coevolution/'):
         os.mkdir('Pickled/Final/KavyaRuns/Coevolution/')
-    run_folder = f'Pickled/Final/KavyaRuns/Coevolution/Coevolution{args.num_agents}DQNAgent_{args.ga_tile_size}tile_{args.ga_rate_elitism}elitism_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks/'
+    run_folder = f'Pickled/Final/KavyaRuns/Coevolution/Coevolution{args.num_agents}DQNAgent_{args.duel_train_iterations}DUELiterations_{args.ga_iterations}GAiterations_{args.ga_population_size}GApopulation_{args.agent_episodes}AGENTepisodes/'
     if not os.path.isdir(run_folder):
         os.mkdir(run_folder)
-    duel_train_filename = f'{run_folder}Coevolution{args.num_agents}DQNAgent_{args.ga_tile_size}tile_{args.ga_rate_elitism}elitism_{args.ga_rate_mutation}mutation_{args.num_food}food_{args.num_blockade}blocks'
+    duel_train_filename = f'{run_folder}Coevolution'
     temp_ga_filename = f'{run_folder}tempGAdata'
     print("Initialized agents")
 
