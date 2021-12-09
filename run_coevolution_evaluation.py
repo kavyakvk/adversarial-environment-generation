@@ -57,7 +57,7 @@ else:
 iterations = len(os.listdir(run_folder))-2
 for iteration in range(args.duel_train_iterations):
     if iteration not in duel_evaluation_pickle:
-        print("iteration")
+        print("iteration", iteration)
         duel_evaluation_pickle[iteration] = {}
 
         filename = f'{run_folder}target_net_{iteration}iteration.pt'
