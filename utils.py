@@ -145,13 +145,20 @@ def get_ani_frame(obs, env_params):
     return pg[0].astype('uint8') 
 
 
-def save_as_gif(env_observations, env_params, output_filename, to_size = (50, 50), frame_len = 50):
+def save_as_gif(env_observations, env_params, output_filename, to_size = (50, 50), frame_len = 50, raw_env_obs = True, freeze_last_frame_for = 0):
     images = []
     for obs in env_observations:
-        img_arr = get_ani_frame(obs, env_params)
+        if raw_env_obs:
+            img_arr = get_ani_frame(obs, env_params)
+        else:
+            img_arr = obs
         image = Image.fromarray(img_arr)
         image = image.quantize(method=Image.MEDIANCUT)
         images.append(image.resize(to_size, resample = Image.BOX))
+        
+    extra_frames = freeze_last_frame_for // frame_len
+    for _ in range(extra_frames):
+        images.append(images[-1])
 
     print("Saving as GIF...")
     images[0].save(output_filename,
