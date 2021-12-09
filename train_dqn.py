@@ -135,4 +135,4 @@ def dqn_main(env_params, agents, grids = None, random_proportion=0.2, filename="
     #     pickle.dump(episode_rewards, f)
     # with open(cwd+'DQN/DQN_training_loss.pkl', 'wb') as f:
     #     pickle.dump(episode_loss, f)
-    return episode_rewards, episode_loss
+    return episode_rewards, episode_loss, episode_food
