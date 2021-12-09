@@ -56,12 +56,13 @@ else:
     duel_evaluation_pickle = {}
 
 iterations = len(os.listdir(run_folder))-2
-for iteration in range(args.duel_train_iterations):
-    if iteration not in duel_evaluation_pickle:
+for iteration in range(20):
+    filename = f'{run_folder}target_net_{iteration}iteration.pt'
+
+    if iteration not in duel_evaluation_pickle and os.path.exists(filename):
         print("iteration", iteration)
         duel_evaluation_pickle[iteration] = {}
 
-        filename = f'{run_folder}target_net_{iteration}iteration.pt'
         test_agents = [agent.DQNAgent(i, ENV_PARAMS, net_filepath=filename) for i in range(5)]
 
         for grid_idx in tqdm(range(len(test_grids))):
@@ -70,3 +71,5 @@ for iteration in range(args.duel_train_iterations):
         print(duel_evaluation_pickle[iteration])
         with open(duel_evaluation_filename, 'wb') as f:
             pickle.dump(duel_evaluation_pickle, f)
+    else:
+        print("skipped iteration", iteration)
