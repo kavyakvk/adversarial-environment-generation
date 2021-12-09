@@ -67,7 +67,7 @@ for iteration in range(20):
 
         for grid_idx in tqdm(range(len(test_grids))):
             grid = test_grids[grid_idx]
-            duel_evaluation_pickle[iteration][grid_idx] = get_food_collected(ENV_PARAMS, agents, grid)
+            duel_evaluation_pickle[iteration][grid_idx] = get_food_collected(ENV_PARAMS, test_agents, grid)
         print(duel_evaluation_pickle[iteration])
         with open(duel_evaluation_filename, 'wb') as f:
             pickle.dump(duel_evaluation_pickle, f)
