@@ -3,12 +3,6 @@ import random
 import copy
 import utils
 
-# ENV_PARAMS = {'coding_dict': {'empty': 0, 'agent': 1, 'bounds': 2, 'hive': 3, 'blockade': 4, 'food_start': 5}, 
-#                             'N': 20, 'M': 20, 'max_food': 5, 'observation_radius': 5, 'steps': 5000, 'spawn_rate': 2, 
-#                             'pheromone': {'evaporation': 0.1, 'diffusion': 0.1, 'step': 0.2, 'cap': 5}, 
-#                             'grid': {'food': 40, 'blockade': 20}, 
-#                             'rgb_coding': {0: [0, 0, 0], 1: [150, 0, 150], 2: [100, 100, 100], 3: [150, 150, 0], 4: [45, 0, 255], 5: [0, 255, 45], 6: (0, 250, 50), 7: (0, 245, 55), 8: (0, 240, 60), 9: (0, 235, 65), 10: (0, 230, 70), 11: (0, 225, 75), 12: (0, 220, 80), 13: (0, 215, 85), 14: (0, 210, 90)}}
-
 class Environment:
     def __init__(self, env_params, grid=None, assert_food_blockade_match = True):
         '''
@@ -205,7 +199,6 @@ class Environment:
             new_agent.location = random.choice([(1,0),(0,1)])     # spawn agents next to hive or below hive
             self.agent_grid[1][0] = 1
             self.agent_nums[1][0] += 1
-            # print(agents[0])
     
     def update_observation(self, agents):
         observations = []
