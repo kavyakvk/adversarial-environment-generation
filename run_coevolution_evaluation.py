@@ -33,11 +33,11 @@ def get_food_collected(env_params, agents, grid):
     food_collected = env.run_episode(agents, visualize=False)
     return food_collected
 
-run_folder = f'Pickled/Final/KavyaRuns/Coevolution/Coevolution5DQNAgent_20DUELiterations_5GAiterations_30GApopulation_20AGENTepisodes/'
+run_folder = f'Results/Final/Coevolution/Coevolution5DQNAgent_20DUELiterations_5GAiterations_30GApopulation_20AGENTepisodes/'
 
 pickle_dict = None
 grids, fitness_values = None, None
-with open("Pickled/Final/KavyaRuns/GA_5DQNAgent_2tile_0.1mutation_40food_20blocks", 'rb') as f:
+with open("Results/Final/GA_5DQNAgent_2tile_0.1mutation_40food_20blocks", 'rb') as f:
     pickle_dict = pickle.load(f)
 grids, fitness_values = pickle_dict['grids'], pickle_dict['fitness values']
 
