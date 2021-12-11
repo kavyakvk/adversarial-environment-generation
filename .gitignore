@@ -1,0 +1,11 @@
+__pycache__/
+.DS_Store
+.ipynb_checkpoints/
+Pickled/.DS_Store
+Pickled/.ipynb_checkpoints/
+__pycache__/agent.cpython-38.pyc
+*.pyc
+*.pyc
+*.pem
+Pickled/.DS_Store
+Pickled/.DS_Store
