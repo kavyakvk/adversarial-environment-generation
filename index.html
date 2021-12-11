@@ -35,17 +35,131 @@
         <h3>Our Environment</h3>
         <p>Ants (purple) spawn from a hive in the upper left corner (yellow). Ants can collect food by walking to a food cell (green) and then returning to the hive. Ants can't walk through obstacles (blue).</p>
 
+        <p>To measure the difficulty of an environment, we used the food collected per agent (FPA).</p>
+
         <h3>Three Foraging Algorithms</h3>
+        <p>Simulation examples of our algorithms on environments of varying difficulty. (Note that these are just illustrative examples for seeing how the algorithms work and are not representative of overall GA performance.)</p>
+
         <h4>RandomAgent</h4>
         <p>Takes random steps and lays random pheromone levels.</p>
+
+        <table>
+            <tr>
+                <td style="padding:20px;width:40%;vertical-align:middle">
+                    Easy: 4.8 FPA <br>
+                    (Generation 0 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Medium: 3.4 FPA <br>
+                    (Generation 25 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Hard: 1.8 FPA <br>
+                    (Generatoin 49 Elite Pool)
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/RandomAgent_defaultparams_iter0_n0_foodperagent_4.8.gif" width="200"/>
+                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/RandomAgent_defaultparams_iter25_n0_foodperagent_3.4.gif" width="200"/>
+                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/RandomAgent_defaultparams_iter49_n1_foodperagent_1.8.gif" width="200"/>                </td>
+            </tr>
+        </table>
 
         <h4>SwarmAgent</h4>
         <p>Follows a more traditional swarm foraging algorithm.</p>
 
+        <table>
+            <tr>
+                <td style="padding:20px;width:40%;vertical-align:middle">
+                    Easy: 4.2 FPA <br>
+                    (Generation 0 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Medium: 1.4 FPA <br>
+                    (Generation 15 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Hard: 0 FPA <br>
+                    (Generatoin 20 Elite Pool)
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/SwarmAgent_defaultparams_iter0_n3_foodperagent_4.2.gif" width="200"/>
+                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/SwarmAgent_defaultparams_iter15_n0_foodperagent_1.4.gif" width="200"/>
+                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/SwarmAgent_defaultparams_iter20_n0_foodperagent_0.0.gif" width="200"/>                </td>
+            </tr>
+        </table>
+
         <h4>DQNAgent</h4>
         <p>Trained with a DQN on randomly generated grids.</p>
+        <table>
+            <tr>
+                <td style="padding:20px;width:40%;vertical-align:middle">
+                    Easy: 3.8 FPA <br>
+                    (Generation 5 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Medium: 0.4 FPA <br>
+                    (Generation 15 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Hard: 0.2 FPA <br>
+                    (Generatoin 5 Elite Pool)
+                </td>
+            </tr>
 
-        <p>Improved version co-evolved with the genetic algorithm.</p>
+            <tr>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/DQNAgent_defaultparams_iter5_n5_foodperagent_3.8.gif" width="200"/>
+                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/DQNAgent_defaultparams_iter15_n4_foodperagent_0.4.gif" width="200"/>
+                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/DQNAgent_defaultparams_iter5_n0_foodperagent_0.2.gif" width="200"/>                </td>
+            </tr>
+        </table>
+
+        <p>Improved DQN co-evolved with the genetic algorithm, rerun on the same grids from the default DQN GA run.</p>
+        <table>
+            <tr>
+                <td style="padding:20px;width:40%;vertical-align:middle">
+                    Easy: 5.2 FPA <br>
+                    (Generation 0 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Medium: 1.2 FPA <br>
+                    (Generation 5 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Hard: 0 FPA <br>
+                    (Generatn 15 Elite Pool)
+                </td>
+            </tr> 
+
+            <tr>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter0_n0_foodperagent_5.2.gif" width="200"/>
+                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter5_n5_foodperagent_1.2.gif" width="200"/>
+                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter15_n0_foodperagent_0.0.gif" width="200"/>                </td>
+            </tr>
+        </table>
 
 
         <!-- <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody> -->
@@ -65,14 +179,14 @@
             </tr>
 
             <tr>
-                <td style="padding:20px;width:40%;vertical-align:middle">
-                    <img src = "media/RandomAgent_defaults_elite_evolution.gif" width="300"/>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/RandomAgent_defaults_elite_evolution.gif" width="200"/>
                 </td>
-                <td style="padding:20px;width:60%;vertical-align:middle">
-                    <img src = "media/SwarmAgent_defaults_elite_evolution.gif" width="300"/>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/SwarmAgent_defaults_elite_evolution.gif" width="200"/>
                 </td>
-                <td style="padding:20px;width:60%;vertical-align:middle">
-                    <img src = "media/DQNAgent_defaults_elite_evolution.gif" width="300"/>                </td>
+                <td style="padding:20px;width:33%;vertical-align:middle">
+                    <img src = "media/DQNAgent_defaults_elite_evolution.gif" width="200"/>                </td>
             </tr>
         </table>
     </body>
