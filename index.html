@@ -1,28 +1,71 @@
-<!-- <style type="text/css">
-	body {
-		font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-		font-weight:300;
-		font-size:18px;
-		margin-left: auto;
-		margin-right: auto;
-		width: 1100px;
-	}
-	
-	h1 {
-		font-weight:300;
-	}
-</style> -->
-
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
-<html>
-  <head>
-		<title>Adversarial Environment Generation</title>
-		<!-- <meta property="og:image" content=""/> -->
-		<meta property="og:title" content="Adversarial Environment Generation" />
-  </head>
+<style type="text/css">
+	body {
+		/* font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+		font-weight:300;
+		font-size:18px; */
+		margin-left: auto;
+		margin-right: auto;
+        width: 800px;
+		/* width: 1100px; */
+	}
+</style>
 
-  <p>We use a genetic algorithm to generate adversarial environments for a multi-agent foraging simulation.</p>
+
+<html>
+    <head>
+        <title>Adversarial Environment Generation</title>
+        <!-- <meta property="og:image" content=""/> -->
+        <meta property="og:title" content="Adversarial Environment Generation" />
+    </head>
+    <body>   
+        <div>
+            <h1>
+                Adversarial Environment Generation
+            </h1>
+            <h3>
+                Kavya Kopparapu, Eric Lin, Lucy Liu
+            </h3>
+            
+            <p>We use a genetic algorithm to generate adversarial environments for a multi-agent foraging simulation. Explore some of our results below!</p>   
+        
+        </div>
+
+        <h3>Our Environment</h3>
+        <p>Ants (purple) spawn from a hive in the upper left corner (yellow). Ants can collect food by walking to a food cell (green) and then returning to the hive. Ants can't walk through obstacles (blue).</p>
+
+        <h3>Three Foraging Algorithms</h3>
+
+        <!-- <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody> -->
+        <table>
+            <h3>Evolution of Hardest Environments</h3>
+
+            <tr>
+                <td style="padding:20px;width:40%;vertical-align:middle">
+                    RandomAgent
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    SwarmAgent
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    DQNAgent
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding:20px;width:40%;vertical-align:middle">
+                    <img src = "media/RandomAgent_defaults_elite_evolution.gif" width="300"/>
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    <img src = "media/SwarmAgent_defaults_elite_evolution.gif" width="300"/>
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    <img src = "media/DQNAgent_defaults_elite_evolution.gif" width="300"/>                </td>
+            </tr>
+        </table>
+          <!-- </tbody></table> -->
+    </body>
 
 <!-- 
   <body>
