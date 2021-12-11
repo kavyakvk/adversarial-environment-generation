@@ -36,6 +36,17 @@
         <p>Ants (purple) spawn from a hive in the upper left corner (yellow). Ants can collect food by walking to a food cell (green) and then returning to the hive. Ants can't walk through obstacles (blue).</p>
 
         <h3>Three Foraging Algorithms</h3>
+        <h4>RandomAgent</h4>
+        <p>Takes random steps and lays random pheromone levels.</p>
+
+        <h4>SwarmAgent</h4>
+        <p>Follows a more traditional swarm foraging algorithm.</p>
+
+        <h4>DQNAgent</h4>
+        <p>Trained with a DQN on randomly generated grids.</p>
+
+        <p>Improved version co-evolved with the genetic algorithm.</p>
+
 
         <!-- <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody> -->
         <table>
@@ -64,109 +75,5 @@
                     <img src = "media/DQNAgent_defaults_elite_evolution.gif" width="300"/>                </td>
             </tr>
         </table>
-          <!-- </tbody></table> -->
     </body>
-
-<!-- 
-  <body>
-    <br>
-          <center>
-          	<span style="font-size:42px">Colorful Image Colorization</span>
-	  		  <table align=center width=600px>
-	  			  <tr>
-	  	              <td align=center width=100px>
-	  					<center>
-	  						<span style="font-size:24px"><a href="https://richzhang.github.io/">Richard Zhang</a></span>
-		  		  		</center>
-		  		  	  </td>
-	  	              <td align=center width=100px>
-	  					<center>
-	  						<span style="font-size:24px"><a href="http://web.mit.edu/phillipi/">Phillip Isola</a></span>
-		  		  		</center>
-		  		  	  </td>
-	  	              <td align=center width=100px>
-	  					<center>
-	  						<span style="font-size:24px"><a href="http://www.eecs.berkeley.edu/~efros/">Alexei A. Efros</a></span>
-		  		  		</center>
-		  		  	  </td>
-			  </table>
-
-	  		  <table align=center width=650px>
-	  			  <tr>
-	  	              <td align=center width=150px>
-	  					<center>
-	  						<span style="font-size:24px"><a href='http://demos.algorithmia.com/colorize-photos/'> [Demo]</a>
-		  		  		</center>
-		  		  	  </td>
-	  	              <td align=center width=150px>
-	  					<center>
-	  						<span style="font-size:24px"><a href='https://github.com/richzhang/colorization'> [GitHub]</a></span>
-		  		  		</center>
-		  		  	  </td>
-	  	              <td align=center width=150px>
-	  					<center>
-	  						<span style="font-size:24px"><a href='https://www.youtube.com/watch?v=4xoTD58Wt-0'> [Talk]</a></span>
-		  		  		</center>
-		  		  	  </td>
-	  	              <td align=center width=150px>
-	  					<center>
-	  						<span style="font-size:24px"><a href='https://www.dropbox.com/s/sa8m3y1ymj0ihct/presentation_eccv_release.pptx?dl=0'> [Slides]</a></span>
-		  		  		</center>
-		  		  	  </td>
-	  	              <td align=center width=150px>
-	  					<center>
-	  						<span style="font-size:24px"><a href='https://arxiv.org/abs/1603.08511'> [Paper]</a></span>
-		  		  		</center>
-		  		  	  </td>
-
-	  	              <td align=center width=150px>
-	  					<center>
-	  						<span style="font-size:24px"><a href='./resources/poster_eccv.pdf'> [Poster]</a></span>
-		  		  		</center>
-		  		  	  </td>
-
-		  		  	 </tr>
-	  			  <tr>
-			  </table>
-	  		  <table align=center width=800px>
-	  	              <td align=center width=150px>
-	  					<center>
-	  						<span style="font-size:18px"><b>Also check out our new work on <a href='https://richzhang.github.io/InteractiveColorization'> Interactive Deep Colorization</a>!</b>
-		  		  		</center>
-		  		  	  </td>
-		  		  	 </tr>
-			  </table>
-          </center>
-
-		  <hr> -->
-
-
-      	  <!-- <br>
-		  <hr>
-			<div class="disclaimerbox">
-
-	  		  	<br>
-				
-				<i> Welcome! Computer vision algorithms often work well on some images, but fail on others. Ours is like this too. We believe our work is a significant step forward in solving the colorization problem. However, there are still many hard cases, and this is by no means a solved problem. Some failure cases can be seen <a href="#vgg_res">below</a> and the figure <a href="./resources/images/imnet_failures.jpg">here</a>.
-
-				</i>
-
-				<br><br>
-
-				<i>This is partly because our algorithm is trained on one million images from the Imagenet dataset, and will thus work well for these types of images, but not necessarily for others. We call this the <i>"dataset bias"</i> problem. We include <a href="#bw_legacy">colorizations of black and white photos of renowned photographers</a> as an interesting <i>"out-of-dataset"</i> experiment and make no claims as to artistic improvements, although we do enjoy many of the results!</i>
-
-				<br><br>
-
-				<i>There has been some concurrent work on this subject as well. Specifically, see Larsson et al. and Iizuka et al. <a href="#related_work">below</a>.</i>
-
-				<br><br>
-
-				<i>Please enjoy our results, and if you're so inclined, <a href="http://demos.algorithmia.com/colorize-photos/">try the model</a> yourself</i>!
-
-			</span>
-
-			</div>
-  		  <br><br>
-		  <hr>             
-</body> -->
 </html>
