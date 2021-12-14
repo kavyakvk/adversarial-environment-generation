@@ -16,7 +16,7 @@
 <html>
     <head>
         <title>Adversarial Environment Generation</title>
-        <!-- <meta property="og:image" content=""/> -->
+        <meta property="og:image" content="media/environment_screenshot_example.png"/>
         <meta property="og:title" content="Adversarial Environment Generation" />
     </head>
     <body>   
@@ -28,19 +28,29 @@
                 Kavya Kopparapu, Eric Lin, Lucy Liu
             </h3>
             
-            <p>We use a genetic algorithm to generate challenging environments for a multi-agent foraging simulation. We consider a foraging environment challenging if agents only manage to collect little or no food on it. We're interested in generating challenging environments because it provides a way to probe the weaknesses of an algorithm, especially if the algorithm is hard to understand due to multiagent interactions (like a swarm) or because deep learning is involved in the training. The challenging environments produced can be used to compare strengths and weaknesses of different algorithms, as well as to improve the algorithms. Explore some of our results below!</p>   
+            <p>We use a genetic algorithm to generate challenging environments for a multi-agent foraging simulation. We consider a foraging environment challenging if agents collect less food on it.</p>
+                
+            <p>We're interested in generating challenging environments because it provides a way to probe the weaknesses of an algorithm, especially if the algorithm is hard to understand due to multiagent interactions or because deep learning is involved in the training. The challenging environments produced can be used to compare strengths and weaknesses of different algorithms, as well as to improve the algorithms.</p>
+            
+            <p>Explore some of our results below!</p>
         
         </div>
 
+
         <h3>Our Environment</h3>
+
+        <div style="text-align: center">
+            <img src = "media/environment_screenshot_example.png" width="200"/>
+        </div>
+
         <p>Ants (purple) spawn from a hive in the upper left corner (yellow). Ants can collect food by walking to a food cell (green) and then returning to the hive. Ants can't walk through obstacles (blue). Ants lay pheromone (gray), and depending on the swarm algorithm, the pheromone can help lead other ants to food.</p>
 
-        <p>To measure the difficulty of an environment, we used the food collected per agent (FPA).</p>
+        <p>To measure the difficulty of an environment, we used the amount of food collected per agent (FPA), where a lower magnitude FPA corresponds to a harder environment.</p>
 
         <h3>Genetic Algorithm</h3>
         <p>We "evolve" a population of environments to get harder using a genetic algorithm (GA). Every generation, the difficulty of each environment is tested by simulating the foraging algorithm on it. The set of hardest environments from the last generation (which we call the "elite pool") are copied over into the new generation. We use mutation and crossover techniques on other members of the last generation to produce the rest of the new generation. </p>
 
-        <p>We constrain environments to have a fixed amount of food and a limited number of obstacles. We also only allow environments where all food blocks are reachable from the hive.</p>
+        <p>We constrain environments to have a fixed amount of food and a limited number of obstacles. Also, only environments where all food blocks are reachable from the hive are allowed.</p>
 
         <h3>Three Foraging Algorithms</h3>
         <p>Below are simulation examples of our algorithms on environments of varying difficulty. (Note that these are just illustrative examples for seeing how the algorithms work. They are not necessarily representative of overall GA results.)</p>
@@ -77,9 +87,9 @@
         </table>
 
         <h4>SwarmAgent</h4>
-        <p>Follows a more traditional ant colony foraging algorithm based on how ants lay pheromone to lead each other to food sources. Once an ant finds food, it knows the optimal way back to the hive.</p>
+        <p>Follows a more traditional swarm foraging algorithm based on how ants lay pheromone to lead each other to food sources. Once an ant finds food, it knows the optimal way back to the hive.</p>
 
-        <p>These ants prefer to follow areas with high pheromone within their limited observation boxes. They try to move towards a forward direction if possible to avoid following their own pheromone back to the hive, but this behavior can lead to the agent getting trapped, which the GA finds a way to exploit.</p>
+        <p>These ants prefer to follow areas with high pheromone within their limited observation boxes. If possible, they try to move towards a forward direction to avoid following their own pheromone back to the hive, but this behavior can lead to the agent getting trapped, which the GA finds a way to exploit.</p>
 
         <table>
             <tr>
@@ -110,67 +120,65 @@
         </table>
 
         <h4>DQNAgent</h4>
-        <p>Trained with a deep q-learning reinforcement learning algorithm (DQN) on randomly generated grids. During training, the agent is rewarded for observing food, collecting food, and taking food back to the hive. Once an ant finds food, it knows the optimal way back to the hive.</p>
+        <p>Trained with a deep Q-learning reinforcement learning algorithm (DQN) on randomly generated grids. During training, the agent is rewarded for observing food, collecting food, and taking food back to the hive. Once an ant finds food, it knows the optimal way back to the hive.</p>
 
         <p></p>
 
         <table>
             <tr>
                 <td style="padding:20px;width:40%;vertical-align:middle">
-                    Easy: 3.8 FPA <br>
+                    Easy: 5.8 FPA <br>
+                    (Generation 0 Elite Pool)
+                </td>
+                <td style="padding:20px;width:60%;vertical-align:middle">
+                    Medium: 0.6 FPA <br>
                     (Generation 5 Elite Pool)
                 </td>
                 <td style="padding:20px;width:60%;vertical-align:middle">
-                    Medium: 0.4 FPA <br>
-                    (Generation 15 Elite Pool)
-                </td>
-                <td style="padding:20px;width:60%;vertical-align:middle">
-                    Hard: 0.2 FPA <br>
+                    Hard: 0.0 FPA <br>
                     (Generation 5 Elite Pool)
                 </td>
             </tr>
 
             <tr>
                 <td style="padding:20px;width:33%;vertical-align:middle">
-                    <img src = "media/DQNAgent_defaultparams_iter5_n5_foodperagent_3.8.gif" width="200"/>
+                    <img src = "media/DQNAgent_defaultparams_iter0_n6_foodperagent_5.8.gif" width="200"/>
                 </td>
                 <td style="padding:20px;width:33%;vertical-align:middle">
-                    <img src = "media/DQNAgent_defaultparams_iter15_n4_foodperagent_0.4.gif" width="200"/>
+                    <img src = "media/DQNAgent_defaultparams_iter5_n1_foodperagent_0.6.gif" width="200"/>
                 </td>
                 <td style="padding:20px;width:33%;vertical-align:middle">
-                    <img src = "media/DQNAgent_defaultparams_iter5_n0_foodperagent_0.2.gif" width="200"/>                </td>
+                    <img src = "media/DQNAgent_defaultparams_iter5_n2_foodperagent_0.0.gif" width="200"/>                </td>
             </tr>
         </table>
 
         <h4>Co-evolved DQNAgent</h4>
-        <p>The same DQN as above after being co-evolved with the genetic algorithm.</p> 
-         <!-- In the animations below, the updated DQNAgent is run on grids pulled from the default DQN GA run. -->
+        <p>The DQN from above after being co-evolved with the genetic algorithm. Below, the co-evolved DQNAgent is run on the same grids as above.</p> 
+
+        <p>Some grids, namely the SwarmAgent trap structure, do still stump the co-evolved DQNAgent. We can also see that the co-evolved DQNAgent still has a tendency to get stuck.</p> 
 
         <table>
             <tr>
                 <td style="padding:20px;width:40%;vertical-align:middle">
-                    Easy: 5.2 FPA <br>
-                    (Generation 0 Elite Pool)
+                    Easy: 4.4 FPA <br>
                 </td>
                 <td style="padding:20px;width:60%;vertical-align:middle">
-                    Medium: 1.2 FPA <br>
-                    (Generation 5 Elite Pool)
+                    Medium: 2.6 FPA <br>
                 </td>
                 <td style="padding:20px;width:60%;vertical-align:middle">
-                    Hard: 0 FPA <br>
-                    (Generation 15 Elite Pool)
+                    Hard: 4.4 FPA <br>
                 </td>
             </tr> 
 
             <tr>
                 <td style="padding:20px;width:33%;vertical-align:middle">
-                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter0_n0_foodperagent_5.2.gif" width="200"/>
+                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter0_n6_foodperagent_4.4.gif" width="200"/>
                 </td>
                 <td style="padding:20px;width:33%;vertical-align:middle">
-                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter5_n5_foodperagent_1.2.gif" width="200"/>
+                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter5_n1_foodperagent_2.6.gif" width="200"/>
                 </td>
                 <td style="padding:20px;width:33%;vertical-align:middle">
-                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter15_n0_foodperagent_0.0.gif" width="200"/>                </td>
+                    <img src = "media/DQNAgent_dueltrained_gridfromdefaultparams_iter5_n2_foodperagent_4.4.gif" width="200"/>                </td>
             </tr>
         </table>
 
@@ -180,7 +188,7 @@
             <h3>Evolution of Hardest Environments</h3>
             <p>For each of the first three algorithms, we averaged the elite pool environments at every generation and watched how that average changed over time.</p>
 
-            <p>For RandomAgent and SwarmAgent, food moves farther from the hive and blocks move closer to the hive, but this trend is less pronounced for DQNAgent. A very specific trap structure by the hive eventually dominates the SwarmAgent elite pool.</p>
+            <p>For RandomAgent and SwarmAgent, food moves farther from the hive and blocks move closer to the hive, but this trend is less pronounced for DQNAgent. This may be because for DQNAgent, the GA quickly evolves an elite pool where agents find no food on all grids, and evolution essentially stops (as seen in the animation). A very specific trap structure by the hive eventually dominates the SwarmAgent elite pool, while no specific structure is able to trap RandomAgent.</p>
             <tr>
                 <td style="padding:20px;width:40%;vertical-align:middle">
                     RandomAgent
