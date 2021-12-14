@@ -28,20 +28,25 @@
                 Kavya Kopparapu, Eric Lin, Lucy Liu
             </h3>
             
-            <p>We use a genetic algorithm to generate adversarial environments for a multi-agent foraging simulation. Explore some of our results below!</p>   
+            <p>We use a genetic algorithm to generate challenging environments for a multi-agent foraging simulation. We consider a foraging environment challenging if agents only manage to collect little or no food on it. We're interested in generating challenging environments because it provides a way to probe the weaknesses of an algorithm, especially if the algorithm is hard to understand due to multiagent interactions (like a swarm) or because deep learning is involved in the training. The challenging environments produced can be used to compare strengths and weaknesses of different algorithms, as well as to improve the algorithms. Explore some of our results below!</p>   
         
         </div>
 
         <h3>Our Environment</h3>
-        <p>Ants (purple) spawn from a hive in the upper left corner (yellow). Ants can collect food by walking to a food cell (green) and then returning to the hive. Ants can't walk through obstacles (blue).</p>
+        <p>Ants (purple) spawn from a hive in the upper left corner (yellow). Ants can collect food by walking to a food cell (green) and then returning to the hive. Ants can't walk through obstacles (blue). Ants lay pheromone (gray), and depending on the swarm algorithm, the pheromone can help lead other ants to food.</p>
 
         <p>To measure the difficulty of an environment, we used the food collected per agent (FPA).</p>
 
+        <h3>Genetic Algorithm</h3>
+        <p>We "evolve" a population of environments to get harder using a genetic algorithm (GA). Every generation, the difficulty of each environment is tested by simulating the foraging algorithm on it. The set of hardest environments from the last generation (which we call the "elite pool") are copied over into the new generation. We use mutation and crossover techniques on other members of the last generation to produce the rest of the new generation. </p>
+
+        <p>We constrain environments to have a fixed amount of food and a limited number of obstacles. We also only allow environments where all food blocks are reachable from the hive.</p>
+
         <h3>Three Foraging Algorithms</h3>
-        <p>Simulation examples of our algorithms on environments of varying difficulty. (Note that these are just illustrative examples for seeing how the algorithms work and are not representative of overall GA performance.)</p>
+        <p>Below are simulation examples of our algorithms on environments of varying difficulty. (Note that these are just illustrative examples for seeing how the algorithms work. They are not necessarily representative of overall GA results.)</p>
 
         <h4>RandomAgent</h4>
-        <p>Takes random steps and lays random pheromone levels.</p>
+        <p>Takes random steps. Because movements are random, these ants do not get trapped like the ants from the other algorithms.</p>
 
         <table>
             <tr>
@@ -72,7 +77,9 @@
         </table>
 
         <h4>SwarmAgent</h4>
-        <p>Follows a more traditional swarm foraging algorithm.</p>
+        <p>Follows a more traditional ant colony foraging algorithm based on how ants lay pheromone to lead each other to food sources. Once an ant finds food, it knows the optimal way back to the hive.</p>
+
+        <p>These ants prefer to follow areas with high pheromone within their limited observation boxes. They try to move towards a forward direction if possible to avoid following their own pheromone back to the hive, but this behavior can lead to the agent getting trapped, which the GA finds a way to exploit.</p>
 
         <table>
             <tr>
@@ -103,7 +110,10 @@
         </table>
 
         <h4>DQNAgent</h4>
-        <p>Trained with a DQN on randomly generated grids.</p>
+        <p>Trained with a deep q-learning reinforcement learning algorithm (DQN) on randomly generated grids. During training, the agent is rewarded for observing food, collecting food, and taking food back to the hive. Once an ant finds food, it knows the optimal way back to the hive.</p>
+
+        <p></p>
+
         <table>
             <tr>
                 <td style="padding:20px;width:40%;vertical-align:middle">
@@ -132,7 +142,10 @@
             </tr>
         </table>
 
-        <p>Improved DQN co-evolved with the genetic algorithm, rerun on the same grids from the default DQN GA run.</p>
+        <h4>Co-evolved DQNAgent</h4>
+        <p>The same DQN as above after being co-evolved with the genetic algorithm.</p> 
+         <!-- In the animations below, the updated DQNAgent is run on grids pulled from the default DQN GA run. -->
+
         <table>
             <tr>
                 <td style="padding:20px;width:40%;vertical-align:middle">
@@ -165,7 +178,9 @@
         <!-- <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody> -->
         <table>
             <h3>Evolution of Hardest Environments</h3>
+            <p>For each of the first three algorithms, we averaged the elite pool environments at every generation and watched how that average changed over time.</p>
 
+            <p>For RandomAgent and SwarmAgent, food moves farther from the hive and blocks move closer to the hive, but this trend is less pronounced for DQNAgent. A very specific trap structure by the hive eventually dominates the SwarmAgent elite pool.</p>
             <tr>
                 <td style="padding:20px;width:40%;vertical-align:middle">
                     RandomAgent
